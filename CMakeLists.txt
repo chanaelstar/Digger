@@ -1,48 +1,19 @@
-cmake_minimum_required(VERSION 3.24)
+cmake_minimum_required(VERSION 3.20)
+project(Phantom)
 
-cmake_path(GET CMAKE_CURRENT_SOURCE_DIR FILENAME FolderName)   
-string(REPLACE " " "_" FolderName ${FolderName})
+file(GLOB_RECURSE MY_SOURCES CONFIGURE_DEPENDS src/*)
+add_executable(${PROJECT_NAME} ${MY_SOURCES})
+target_include_directories(${PROJECT_NAME} PRIVATE src/)
 
-project(${FolderName}_Project)
+# Set the folder where the executable will be created
+set_target_properties(${PROJECT_NAME} PROPERTIES
+    RUNTIME_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/bin/${CMAKE_BUILD_TYPE})
 
-set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/bin/${CMAKE_BUILD_TYPE})
+# Librairies
 
-if (MSVC)
-    add_compile_options(/W3)
-else()
-    add_compile_options(-Wall -Wextra -Wpedantic -pedantic-errors)
-endif()
+# ---Add glbasimac---
+add_subdirectory(lib/glbasimac)
+target_link_libraries(${PROJECT_NAME} PRIVATE glbasimac)
 
-file(GLOB_RECURSE SRC_FILES CONFIGURE_DEPENDS "src/*.cpp")
-file(GLOB_RECURSE SRC_MAIN_FILES CONFIGURE_DEPENDS "src/exo*.cpp")
-
-# # Filter out main files
-# list(FILTER SRC_FILES EXCLUDE REGEX "src/main_.*.cpp")
-
-# Remove main files from SRC_FILES
-foreach(SRC_MAIN_FILE ${SRC_MAIN_FILES})
-    list(REMOVE_ITEM SRC_FILES ${SRC_MAIN_FILE})
-endforeach()
-
-message(STATUS "SRC_FILES: ")
-foreach(SRC_FILE ${SRC_FILES})
-    message(STATUS "    ${SRC_FILE}")
-endforeach()
-
-message(STATUS "SRC_MAIN_FILES: ")
-foreach(SRC_MAIN_FILE ${SRC_MAIN_FILES})
-    message(STATUS "    ${SRC_MAIN_FILE}")
-endforeach()
-
-foreach(SRC_MAIN_FILE ${SRC_MAIN_FILES})
-    get_filename_component(SRC_MAIN_FILE_NAME ${SRC_MAIN_FILE} NAME)
-    string(REPLACE ".cpp" "" SRC_MAIN_FILE_NAME ${SRC_MAIN_FILE_NAME})
-    string(REPLACE "main_" "" SRC_MAIN_FILE_NAME ${SRC_MAIN_FILE_NAME})
-
-    message(STATUS "Creating executable: ${SRC_MAIN_FILE_NAME}")
-    add_executable(${SRC_MAIN_FILE_NAME} ${SRC_MAIN_FILE} ${SRC_FILES})
-    target_compile_features(${SRC_MAIN_FILE_NAME} PUBLIC cxx_std_20)
-    target_include_directories(${SRC_MAIN_FILE_NAME} PUBLIC "src/")
-endforeach()
-
-set(CMAKE_CXX_STANDARD 20)
+include(CmakeUtils/files_and_folders.cmake)
+Cool__target_copy_folder(${PROJECT_NAME} "assets")
