@@ -113,10 +113,10 @@ void drawScene()
 {
 	glPointSize(10.0);
 
-	frame.drawSet();
+	// frame.drawSet();
 
 	myEngine.setFlatColor(0.2, 0.0, 0.0);
-	ground.drawShape();
+	// ground.drawShape();
 
 	// myEngine.mvMatrixStack.pushMatrix();
 	// myEngine.mvMatrixStack.addTranslation(Vector3D(4.0f, 0.0f, 5.0f));
@@ -127,18 +127,18 @@ void drawScene()
 	// sphere->draw();
 	// myEngine.mvMatrixStack.popMatrix();
 
-	myEngine.mvMatrixStack.pushMatrix();
-	myEngine.mvMatrixStack.addTranslation(Vector3D(cos(i * 0.1) * 5.0f, sin(i * 0.1) * 5.0f, 0.0f));
-	myEngine.updateMvMatrix();
-	myEngine.setFlatColor(1.0f, 1.0f, 1.0f);
-	sphere->draw();
-	myEngine.mvMatrixStack.popMatrix();
-	i++;
+	// myEngine.mvMatrixStack.pushMatrix();
+	// myEngine.mvMatrixStack.addTranslation(Vector3D(cos(i * 0.1) * 5.0f, sin(i * 0.1) * 5.0f, 0.0f));
+	// myEngine.updateMvMatrix();
+	// myEngine.setFlatColor(1.0f, 1.0f, 1.0f);
+	// sphere->draw();
+	// // myEngine.mvMatrixStack.popMatrix();
+	// i++;
 
-	myEngine.mvMatrixStack.pushMatrix();
-	myEngine.mvMatrixStack.addTranslation(Vector3D(0.0f, 0.0f, 10.0f));
-	myEngine.updateMvMatrix();
-	myEngine.mvMatrixStack.popMatrix();
+	// myEngine.mvMatrixStack.pushMatrix();
+	// myEngine.mvMatrixStack.addTranslation(Vector3D(0.0f, 0.0f, 10.0f));
+	// myEngine.updateMvMatrix();
+	// myEngine.mvMatrixStack.popMatrix();
 
 	drawMap(createMap());
 }
