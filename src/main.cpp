@@ -5,6 +5,7 @@
 #include "tools/matrix_stack.hpp"
 #include <iostream>
 #include <cmath>
+#include "carte.hpp"
 
 /* Window size */
 
@@ -107,6 +108,9 @@ int main()
     glfwSetKeyCallback(window, key_callback);
 
     initScene();
+
+    auto const map = createMap();
+    printGrid(map);
 
     /* Loop until the user closes the window */
     while (!glfwWindowShouldClose(window))

@@ -1,5 +1,6 @@
 #include "draw_scene.hpp"
 #include <tuple>
+#include "carte.hpp"
 
 
 /// Camera parameters
@@ -68,83 +69,43 @@ void initScene()
 	circle.initShape(coord_circle);
 	circle.changeNature(GL_TRIANGLE_FAN);
 
-	drawFrame();
 }
 
-void drawFrame()
-{
-	std::vector<float> axes{0.0, 0.0, 0.0,
-							10.0, 0.0, 0.0,
-							0.0, 0.0, 0.0,
-							0.0, 10.0, 0.0,
-							0.0, 0.0, 0.0,
-							0.0, 0.0, 10.0};
+void drawMap(const std::vector<std::vector<int>>& map) {
+    int rows = map.size();
+    int cols = map[0].size();
+    float tileSize = 1.0f; // taille d’une case
 
-	std ::vector<float> colors{1.0, 0.0, 0.0,
-							   1.0, 0.0, 0.0,
-							   0.0, 1.0, 0.0,
-							   0.0, 1.0, 0.0,
-							   0.0, 0.0, 1.0,
-							   0.0, 0.0, 1.0};
+    for (int i = 0; i < rows; ++i) {
+        for (int j = 0; j < cols; ++j) {
+            float x = j * tileSize;
+            float y = i * tileSize;
 
-	frame.initSet(axes, colors);
-	frame.changeNature(GL_LINES);
+            int val = map[i][j];
+
+            // Choix d'une couleur en fonction de la valeur de la case
+            if (val == 0)
+                glColor3f(1.0f, 1.0f, 1.0f); // blanc
+            else if (val == 1)
+                glColor3f(0.0f, 0.0f, 0.0f); // noir
+            else
+                glColor3f(1.0f, 0.0f, 0.0f); // rouge, par exemple
+
+            // Dessin d’un carré (case)
+            glBegin(GL_QUADS);
+            glVertex2f(x, y);
+            glVertex2f(x + tileSize, y);
+            glVertex2f(x + tileSize, y + tileSize);
+            glVertex2f(x, y + tileSize);
+            glEnd();
+        }
+    }
 }
 
-void drawBase()
-{
-	// myEngine.mvMatrixStack.pushMatrix();
-	// myEngine.mvMatrixStack.addHomothety(6.f);
-	// myEngine.updateMvMatrix();
-	// myEngine.setFlatColor(0.2, 0.0, 0.0);
-	// cercle->draw();
-	// myEngine.mvMatrixStack.popMatrix();
-	myEngine.mvMatrixStack.pushMatrix();
-	myEngine.mvMatrixStack.addRotation(degToRad(90.f), Vector3D(1.f, 0.f, 0.f));
-	myEngine.updateMvMatrix();
-	auto [r, g, b] = colorConvertor(235, 207, 52);
-	myEngine.setFlatColor(r, g, b);
-	cone->draw();
-	myEngine.mvMatrixStack.popMatrix();
-}
 
-void drawArm()
-{
-	myEngine.mvMatrixStack.pushMatrix();
-	myEngine.mvMatrixStack.addHomothety(Vector3D(1.f, 1.f, 0.5f));
-	myEngine.updateMvMatrix();
-	myEngine.mvMatrixStack.pushMatrix();
-	myEngine.mvMatrixStack.addHomothety(Vector3D(1.0f, -1.0f, 1.0f));
-	myEngine.updateMvMatrix();
-	auto [r, g, b] = colorConvertor(245,164,66);
-	myEngine.setFlatColor(r, g, b);
-	cone->draw();
-	myEngine.mvMatrixStack.popMatrix();
 
-	myEngine.mvMatrixStack.pushMatrix();
-	myEngine.updateMvMatrix();
-	cone->draw();
-	myEngine.mvMatrixStack.popMatrix();
-	myEngine.mvMatrixStack.popMatrix();
 
-	myEngine.mvMatrixStack.pushMatrix();
-	myEngine.mvMatrixStack.addHomothety(1.6f);
-	myEngine.updateMvMatrix();
-	sphere->draw();
-	myEngine.mvMatrixStack.popMatrix();
-}
 
-void drawPan()
-{
-	myEngine.mvMatrixStack.pushMatrix();
-	myEngine.mvMatrixStack.addHomothety(6.f);
-	myEngine.updateMvMatrix();
-	auto [r, g, b] = colorConvertor(255);
-	myEngine.setFlatColor(r, g, b);
-	circle.drawShape();
-	myEngine.mvMatrixStack.popMatrix();
-	myEngine.mvMatrixStack.pushMatrix();
-}
 
 int i = 0;
 
@@ -174,12 +135,10 @@ void drawScene()
 	myEngine.mvMatrixStack.popMatrix();
 	i++;
 
-	drawBase();
 	myEngine.mvMatrixStack.pushMatrix();
 	myEngine.mvMatrixStack.addTranslation(Vector3D(0.0f, 0.0f, 10.0f));
 	myEngine.updateMvMatrix();
-	drawArm();
 	myEngine.mvMatrixStack.popMatrix();
 
-	drawPan();
+	drawMap(createMap());
 }
