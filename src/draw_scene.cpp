@@ -54,11 +54,17 @@ void initScene(){
 								 -10.0, 10.0, 0.0};
 	carre.initShape(carreCoordinates);
 	ground.initShape(baseCarre);
+	carre.changeNature(GL_TRIANGLE_FAN);
 	ground.changeNature(GL_TRIANGLE_FAN);
 
 }
 
 void renderScene() {
+
+	myEngine.mvMatrixStack.pushMatrix();
+	myEngine.mvMatrixStack.addTranslation(Vector3D(0.0f, 0.0f, 0.0f));
+	// myEngine.mvMatrixStack.addHomothety(3.0f);
+	myEngine.updateMvMatrix();
     switch(objectNumber) {
     case 0:
         myEngine.setFlatColor(1.0f, 0.0f, 0.0f);
@@ -68,6 +74,7 @@ void renderScene() {
         break;
     }
 }
+
 
 void drawMap(const std::vector<std::vector<int>>& map) {
     int rows = map.size();

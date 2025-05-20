@@ -117,7 +117,6 @@ int main()
 
 
     auto map = createMap();
-    drawScene(map); 
     printGrid(map);
 
     /* Loop until the user closes the window */
@@ -128,6 +127,8 @@ int main()
 
         /* Render here */
         renderScene();
+        // drawScene(map); 
+
         glClearColor(0.2f, 0.f, 0.f, 0.f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
         glEnable(GL_DEPTH_TEST);
