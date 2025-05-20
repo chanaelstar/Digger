@@ -3,20 +3,21 @@
 #include "carte.hpp"
 
 
-/// Camera parameters
+//Camera parameters
 // float angle_theta{45.0}; // Angle between x axis and viewpoint
 // float angle_phy{30.0};	 // Angle between z axis and viewpoint
 float dist_zoom{30.0};	 // Distance between origin and viewpoint
 
+/* OpenGL Engine */
 GLBI_Engine myEngine;
 GLBI_Set_Of_Points somePoints(3);
 GLBI_Convex_2D_Shape ground{3};
-GLBI_Convex_2D_Shape circle{3};
-
+GLBI_Convex_2D_Shape carre;
 GLBI_Set_Of_Points frame(3);
+int objectNumber = 0;
 
-IndexedMesh *sphere;
-StandardMesh *cone;
+
+
 
 // float degToRad(float const &angle)
 // {
@@ -37,8 +38,13 @@ StandardMesh *cone;
 // 			static_cast<float>(color) / 255.0f};
 // }
 
-void initScene()
-{
+void initScene(){
+	std::vector<float> carreCoordinates = {
+        -0.5f, -0.5f,
+        0.5f, -0.5f,
+        0.5f, 0.5f,
+        -0.5f, 0.5f
+    };
 	std::vector<float> points{0.0, 0.0, 0.0};
 	somePoints.initSet(points, 1.0, 1.0, 1.0);
 
@@ -46,22 +52,21 @@ void initScene()
 								 10.0, -10.0, 0.0,
 								 10.0, 10.0, 0.0,
 								 -10.0, 10.0, 0.0};
+	carre.initShape(carreCoordinates);
 	ground.initShape(baseCarre);
 	ground.changeNature(GL_TRIANGLE_FAN);
 
-	std::vector<float> coord_point{0.0f, 0.0f, 0.0f};
+}
 
-	std::vector<float> coord_circle{0.0f, 0.0f, 0.0f};
-
-	for (int i{1}; i < 100; i++)
-	{
-		coord_circle.push_back(sin(static_cast<float>(i) / M_PI));
-		coord_circle.push_back(cos(static_cast<float>(i) / M_PI));
-		coord_circle.push_back(0.0f);
-	}
-
-	circle.initShape(coord_circle);
-	circle.changeNature(GL_TRIANGLE_FAN);
+void renderScene() {
+    switch(objectNumber) {
+    case 0:
+        myEngine.setFlatColor(1.0f, 0.0f, 0.0f);
+        carre.drawShape();
+        break;
+    default:
+        break;
+    }
 }
 
 void drawMap(const std::vector<std::vector<int>>& map) {
@@ -94,10 +99,6 @@ void drawMap(const std::vector<std::vector<int>>& map) {
         }
     }
 }
-
-
-
-
 
 
 int i = 0;

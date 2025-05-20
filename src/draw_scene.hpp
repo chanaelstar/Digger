@@ -18,6 +18,7 @@ extern float dist_zoom  ;      // Distance between origin and viewpoint
 extern GLBI_Engine myEngine;
 
 void initScene();
+void renderScene();
 void drawScene(const std::vector<std::vector<int>>& map);
 void drawMap(const std::vector<std::vector<int>>& map);
 

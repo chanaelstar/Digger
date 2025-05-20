@@ -52,7 +52,7 @@ void simulateStep(std::vector<std::vector<int>>& grid) {
     grid = newGrid;
 }
 
-// Affiche la grille
+// Affiche la grille dans la console
 void printGrid(const std::vector<std::vector<int>>& grid) {
     for (int y = 0; y < HEIGHT; ++y) {
         for (int x = 0; x < WIDTH; ++x) {
@@ -62,6 +62,8 @@ void printGrid(const std::vector<std::vector<int>>& grid) {
     }
 }
 
+// Génère la carte complète en appliquant les étapes de l'automate cellulaire
+// et en retournant la grille finale
 std::vector<std::vector<int>> createMap(){
 
     
@@ -70,13 +72,9 @@ std::vector<std::vector<int>> createMap(){
     std::vector<std::vector<int>> grid(HEIGHT, std::vector<int>(WIDTH, 0));
     initializeGrid(grid);
     
-    // std::cout << "Initial Grid:";
-    // printGrid(grid);
     
     for (int i = 0; i < ITERATIONS; ++i) {
         simulateStep(grid);
-        // std::cout << "After iteration " << i + 1 << std::endl;
-        // printGrid(grid);
     }
 
     return grid;
