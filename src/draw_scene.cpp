@@ -4,8 +4,8 @@
 
 
 /// Camera parameters
-float angle_theta{45.0}; // Angle between x axis and viewpoint
-float angle_phy{30.0};	 // Angle between z axis and viewpoint
+// float angle_theta{45.0}; // Angle between x axis and viewpoint
+// float angle_phy{30.0};	 // Angle between z axis and viewpoint
 float dist_zoom{30.0};	 // Distance between origin and viewpoint
 
 GLBI_Engine myEngine;
@@ -18,33 +18,27 @@ GLBI_Set_Of_Points frame(3);
 IndexedMesh *sphere;
 StandardMesh *cone;
 
-float degToRad(float const &angle)
-{
-	return (angle * M_PI / 2) / 90;
-}
+// float degToRad(float const &angle)
+// {
+// 	return (angle * M_PI / 2) / 90;
+// }
 
-std::tuple<float, float, float> colorConvertor(int const &r, int const &g, int const &b)
-{
-	return {static_cast<float>(r) / 255.0f,
-			static_cast<float>(g) / 255.0f,
-			static_cast<float>(b) / 255.0f};
-}
+// std::tuple<float, float, float> colorConvertor(int const &r, int const &g, int const &b)
+// {
+// 	return {static_cast<float>(r) / 255.0f,
+// 			static_cast<float>(g) / 255.0f,
+// 			static_cast<float>(b) / 255.0f};
+// }
 
-std::tuple<float, float, float> colorConvertor(int const &color)
-{
-	return {static_cast<float>(color) / 255.0f,
-			static_cast<float>(color) / 255.0f,
-			static_cast<float>(color) / 255.0f};
-}
+// std::tuple<float, float, float> colorConvertor(int const &color)
+// {
+// 	return {static_cast<float>(color) / 255.0f,
+// 			static_cast<float>(color) / 255.0f,
+// 			static_cast<float>(color) / 255.0f};
+// }
 
 void initScene()
 {
-	sphere = basicSphere();
-	sphere->createVAO();
-
-	cone = basicCone(10, 2);
-	cone->createVAO();
-
 	std::vector<float> points{0.0, 0.0, 0.0};
 	somePoints.initSet(points, 1.0, 1.0, 1.0);
 
@@ -68,7 +62,6 @@ void initScene()
 
 	circle.initShape(coord_circle);
 	circle.changeNature(GL_TRIANGLE_FAN);
-
 }
 
 void drawMap(const std::vector<std::vector<int>>& map) {
@@ -109,13 +102,13 @@ void drawMap(const std::vector<std::vector<int>>& map) {
 
 int i = 0;
 
-void drawScene()
+void drawScene(const std::vector<std::vector<int>>& map)
 {
 	glPointSize(10.0);
 
 	// frame.drawSet();
 
-	myEngine.setFlatColor(0.2, 0.0, 0.0);
+	myEngine.setFlatColor(0.8, 0.0, 0.0);
 	// ground.drawShape();
 
 	// myEngine.mvMatrixStack.pushMatrix();
@@ -140,5 +133,6 @@ void drawScene()
 	// myEngine.updateMvMatrix();
 	// myEngine.mvMatrixStack.popMatrix();
 
-	drawMap(createMap());
+	// drawMap(createMap());
+	drawMap(map);
 }
