@@ -79,24 +79,25 @@ void renderScene() {
 void drawMap(const std::vector<std::vector<int>>& map) {
     int rows = map.size();
     int cols = map[0].size();
-    float tileSize = 1.0f; // taille d’une case
+    float tileSize = 2.0f;
+
+    float offsetX = -cols * tileSize / 2.0f;
+    float offsetY = -rows * tileSize / 2.0f;
 
     for (int i = 0; i < rows; ++i) {
         for (int j = 0; j < cols; ++j) {
-            float x = j * tileSize;
-            float y = i * tileSize;
+			float x = offsetX + j * tileSize;
+			float y = offsetY + i * tileSize;
 
             int val = map[i][j];
 
-            // Choix d'une couleur en fonction de la valeur de la case
             if (val == 0)
                 glColor3f(1.0f, 1.0f, 1.0f); // blanc
             else if (val == 1)
                 glColor3f(0.0f, 0.0f, 0.0f); // noir
             else
-                glColor3f(1.0f, 0.0f, 0.0f); // rouge, par exemple
+                glColor3f(1.0f, 0.0f, 0.0f); // rouge
 
-            // Dessin d’un carré (case)
             glBegin(GL_QUADS);
             glVertex2f(x, y);
             glVertex2f(x + tileSize, y);

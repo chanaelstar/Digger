@@ -125,13 +125,15 @@ int main()
         /* Get time (in second) at loop beginning */
         double startTime = glfwGetTime();
 
-        /* Render here */
-        renderScene();
-        // drawScene(map); 
-
+         // Efface l'écran (à faire avant tout dessin)
         glClearColor(0.2f, 0.f, 0.f, 0.f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
         glEnable(GL_DEPTH_TEST);
+
+        /* Render here */
+        drawScene(map); 
+        renderScene();
+    
 
         /* Fix camera position */
         // myEngine.mvMatrixStack.loadIdentity();
@@ -139,7 +141,6 @@ int main()
 
         /* Swap front and back buffers */
         glfwSwapBuffers(window);
-
         /* Poll for and process events */
         glfwPollEvents();
 
