@@ -66,47 +66,65 @@ void renderScene() {
 	// myEngine.mvMatrixStack.addHomothety(3.0f);
 	myEngine.updateMvMatrix();
     switch(objectNumber) {
-    case 0:
-        myEngine.setFlatColor(1.0f, 0.0f, 0.0f);
-        carre.drawShape();
-        break;
-    default:
-        break;
+    // case 0:
+    //     myEngine.setFlatColor(1.0f, 0.0f, 0.0f);
+    //     carre.drawShape();
+    //     break;
+    // default:
+    //     break;
     }
 }
 
+// dessin de la grille avec des carrés
+void drawSquare(float x, float y, float size) {
 
-void drawMap(const std::vector<std::vector<int>>& map) {
+	glBegin(GL_QUADS);
+	glVertex2f(x, y);
+	glVertex2f(x + size, y);
+	glVertex2f(x + size, y + size);
+	glVertex2f(x, y + size);
+	glEnd();
+
+}
+void drawMap(const std::vector<std::vector<int>>& map, GLBI_Engine& myEngine) {
     int rows = map.size();
     int cols = map[0].size();
-    float tileSize = 2.0f;
 
-    float offsetX = -cols * tileSize / 2.0f;
-    float offsetY = -rows * tileSize / 2.0f;
+    // Taille totale de la grille en "unités OpenGL"
+    // float totalWidth = 100.0f;
+    float totalHeight = 100.0f;
 
-    for (int i = 0; i < rows; ++i) {
-        for (int j = 0; j < cols; ++j) {
-			float x = offsetX + j * tileSize;
-			float y = offsetY + i * tileSize;
+    // Taille d'une case adaptée dynamiquement
+    // float tileWidth = totalWidth / cols;
+    float tileSize = totalHeight / rows;
 
-            int val = map[i][j];
+    // On utilise la plus petite des deux pour garder des cases carrées
+    // float tileSize = std::min(tileWidth, tileHeight);
+
+    // float offsetX = -cols * tileSize / 2.0f;
+    // float offsetY = -rows * tileSize / 2.0f;
+
+    for (int yi = 0; yi < rows; ++yi) {
+        for (int xi = 0; xi < cols; ++xi) {
+            float x = xi / float(cols) *100.f - 50.f;
+            float y = yi / float(rows) *100.f - 50.f;
+            // float y = offsetY + i * tileSize;
+
+            int val = map[yi][xi];
 
             if (val == 0)
-                glColor3f(1.0f, 1.0f, 1.0f); // blanc
+                
+	myEngine.setFlatColor(1.0f, 1.0f, 1.0f); // blanc
             else if (val == 1)
-                glColor3f(0.0f, 0.0f, 0.0f); // noir
+                	myEngine.setFlatColor(0.0f, 0.0f, 0.0f); // noir
             else
-                glColor3f(1.0f, 0.0f, 0.0f); // rouge
+                	myEngine.setFlatColor(1.0f, 0.0f, 0.0f); // rouge
 
-            glBegin(GL_QUADS);
-            glVertex2f(x, y);
-            glVertex2f(x + tileSize, y);
-            glVertex2f(x + tileSize, y + tileSize);
-            glVertex2f(x, y + tileSize);
-            glEnd();
+            drawSquare(x, y, tileSize);
         }
     }
 }
+
 
 
 int i = 0;
@@ -117,7 +135,10 @@ void drawScene(const std::vector<std::vector<int>>& map)
 
 	// frame.drawSet();
 
-	myEngine.setFlatColor(0.8, 0.0, 0.0);
+
+	// change la couleur du rectangle
+
+	
 	// ground.drawShape();
 
 	// myEngine.mvMatrixStack.pushMatrix();
@@ -143,5 +164,8 @@ void drawScene(const std::vector<std::vector<int>>& map)
 	// myEngine.mvMatrixStack.popMatrix();
 
 	// drawMap(createMap());
-	drawMap(map);
+
+
+	drawMap(map, myEngine);
+
 }
