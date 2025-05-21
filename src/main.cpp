@@ -15,7 +15,7 @@ using namespace glbasimac;
 
 /* Minimal time wanted between two images */
 static const double FRAMERATE_IN_SECONDS = 1. / 30.;
-static float aspectRatio = 1.0f;
+// static float aspectRatio = 1.0f;
 
 /* Window size */
 static const int WINDOW_WIDTH = 800;
@@ -77,6 +77,7 @@ void onError(int error, const char *description)
 
 int main()
 {
+    const double FRAMERATE_IN_SECONDS = 1. / 30.;
     // Initialize the library
     if (!glfwInit())
     {
@@ -96,6 +97,8 @@ int main()
 
     // -- Callbacks --
     glfwSetWindowSizeCallback(window, onWindowResized);
+    glfwSetKeyCallback(window, key_callback);
+
 
     // Make the window's context current
     glfwMakeContextCurrent(window);
@@ -115,6 +118,8 @@ int main()
     // Initaialize the set of points
     initScene();
 
+    // pour le player
+    objectNumber = 0;
 
     auto map = createMap();
     printGrid(map);
@@ -131,8 +136,9 @@ int main()
         glEnable(GL_DEPTH_TEST);
 
         /* Render here */
-        drawScene(map); 
         renderScene();
+        drawScene(map); 
+
     
 
         /* Fix camera position */

@@ -3,6 +3,7 @@
 #include "carte.hpp"
 
 
+
 //Camera parameters
 // float angle_theta{45.0}; // Angle between x axis and viewpoint
 // float angle_phy{30.0};	 // Angle between z axis and viewpoint
@@ -57,22 +58,55 @@ void initScene(){
 	carre.changeNature(GL_TRIANGLE_FAN);
 	ground.changeNature(GL_TRIANGLE_FAN);
 
+	    std::vector<float> playerCoordinates = {
+        -0.5f, -0.5f,
+         0.5f, -0.5f,
+         0.5f,  0.5f,
+        -0.5f,  0.5f
+    };
+    carre.initShape(playerCoordinates);
+
 }
 
 void renderScene() {
 
-	myEngine.mvMatrixStack.pushMatrix();
-	myEngine.mvMatrixStack.addTranslation(Vector3D(0.0f, 0.0f, 0.0f));
-	// myEngine.mvMatrixStack.addHomothety(3.0f);
-	myEngine.updateMvMatrix();
-    switch(objectNumber) {
-    // case 0:
-    //     myEngine.setFlatColor(1.0f, 0.0f, 0.0f);
-    //     carre.drawShape();
-    //     break;
-    // default:
-    //     break;
+    // Met à jour la projection 2D directement
+    if (aspectRatio > 1.0f) {
+        myEngine.set2DProjection(-50.f * aspectRatio, 50.f * aspectRatio, -50.f, 50.f);
+    } else {
+        myEngine.set2DProjection(-50.f, 50.f, -50.f / aspectRatio, 50.f / aspectRatio);
     }
+
+        myEngine.mvMatrixStack.loadIdentity();  // Cette ligne est OK si mvMatrixStack existe
+
+
+	// myEngine.mvMatrixStack.pushMatrix();
+	// myEngine.mvMatrixStack.addTranslation(Vector3D(0.0f, 0.0f, 0.0f));
+	// // myEngine.mvMatrixStack.addHomothety(3.0f);
+	// myEngine.updateMvMatrix();
+    // switch(objectNumber) {
+    // // case 0:
+    // //     myEngine.setFlatColor(1.0f, 0.0f, 0.0f);
+    // //     carre.drawShape();
+    // //     break;
+    // // default:
+    // //     break;
+    // }
+
+	// joueur
+	myEngine.setFlatColor(1.0f, 0.0f, 0.0f);
+    carre.changeNature(GL_TRIANGLE_FAN);
+
+ 
+    // joueur
+    myEngine.setFlatColor(1.0f, 0.0f, 0.0f);
+    carre.changeNature(GL_TRIANGLE_FAN);
+
+    myEngine.mvMatrixStack.pushMatrix();
+    myEngine.mvMatrixStack.addTranslation(STP3D::Vector3D(carrePosX, carrePosY, 0.0f));
+    myEngine.updateMvMatrix();
+    carre.drawShape();
+    myEngine.mvMatrixStack.popMatrix();
 }
 
 // dessin de la grille avec des carrés
@@ -133,6 +167,7 @@ void drawScene(const std::vector<std::vector<int>>& map)
 {
 	glPointSize(10.0);
 
+
 	// frame.drawSet();
 
 
@@ -168,4 +203,51 @@ void drawScene(const std::vector<std::vector<int>>& map)
 
 	drawMap(map, myEngine);
 
+}
+
+// pour le joueur 
+
+
+/* Position du carré */
+float carrePosX = 0.0f;
+float carrePosY = 0.0f;
+// int objectNumber = 0;
+
+/* Moteur graphique et objets */
+GLBI_Set_Of_Points thePoints;
+
+// float aspectRatio = 1.0f;
+
+/* Espace virtuel */
+// static const float GL_VIEW_SIZE = 6.0;
+
+
+float aspectRatio = 1.0f; // ou une autre valeur par défaut
+
+
+void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods)
+{
+    if (action == GLFW_PRESS || action == GLFW_REPEAT)
+    {
+        switch (key)
+        {
+        case GLFW_KEY_W:
+            carrePosY += 0.1f;
+            break;
+        case GLFW_KEY_S:
+            carrePosY -= 0.1f;
+            break;
+        case GLFW_KEY_A:
+            carrePosX -= 0.1f;
+            break;
+        case GLFW_KEY_D:
+            carrePosX += 0.1f;
+            break;
+        case GLFW_KEY_B:
+            objectNumber = (objectNumber + 1) % 3;
+            break;
+        default:
+            break;
+        }
+    }
 }

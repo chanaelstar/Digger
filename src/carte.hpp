@@ -6,3 +6,4 @@
 
 std::vector<std::vector<int>> createMap();
 void printGrid(const std::vector<std::vector<int>>& grid);
+
