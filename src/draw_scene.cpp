@@ -59,10 +59,10 @@ void initScene(){
 	ground.changeNature(GL_TRIANGLE_FAN);
 
 	    std::vector<float> playerCoordinates = {
-        -0.5f, -0.5f,
-         0.5f, -0.5f,
-         0.5f,  0.5f,
-        -0.5f,  0.5f
+        -1.f, -1.f,
+         1.f, -1.f,
+         1.f,  1.f,
+        -1.f,  1.f
     };
     carre.initShape(playerCoordinates);
 
@@ -93,11 +93,6 @@ void renderScene() {
     // //     break;
     // }
 
-	// joueur
-	myEngine.setFlatColor(1.0f, 0.0f, 0.0f);
-    carre.changeNature(GL_TRIANGLE_FAN);
-
- 
     // joueur
     myEngine.setFlatColor(1.0f, 0.0f, 0.0f);
     carre.changeNature(GL_TRIANGLE_FAN);
