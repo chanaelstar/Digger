@@ -73,12 +73,14 @@ void renderScene() {
 // dessin de la grille avec des carrés (pour la carte)
 void drawSquare(float x, float y, float size) {
 
-	glBegin(GL_QUADS);
-	glVertex2f(x, y);
-	glVertex2f(x + size, y);
-	glVertex2f(x + size, y + size);
-	glVertex2f(x, y + size);
-	glEnd();
+    carre.changeNature(GL_TRIANGLE_FAN);
+    myEngine.mvMatrixStack.pushMatrix();
+    myEngine.mvMatrixStack.addTranslation(STP3D::Vector3D(x+size/2, y+size/2, 0.0f));
+    myEngine.mvMatrixStack.addHomothety(STP3D::Vector3D(size/2, size/2, 0.0f));
+    myEngine.updateMvMatrix();
+    carre.drawShape();
+    myEngine.mvMatrixStack.popMatrix();
+    myEngine.updateMvMatrix();
 
 }
 
