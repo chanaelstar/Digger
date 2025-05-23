@@ -1,4 +1,6 @@
 #include "draw_scene.hpp"
+#include <tuple>
+#include "carte.hpp"
 
 float dist_zoom{30.0};	 // Distance between origin and viewpoint
 
@@ -9,13 +11,6 @@ GLBI_Convex_2D_Shape ground{3};
 GLBI_Convex_2D_Shape carre;
 GLBI_Set_Of_Points frame(3);
 int objectNumber = 0;
-
-//Pour les sprites
-//GLBI_Texture myTexture;
-GLBI_Texture sandTexture;
-GLBI_Texture waterTexture;
-StandardMesh* rectangle;
-StandardMesh* a_frame;
 
 
 void initScene(){
@@ -45,49 +40,6 @@ void initScene(){
     };
     carre.initShape(playerCoordinates);
 
-    //Application de la texture
-    // rectangle = basicRect(5.0, 5.0);
-    // rectangle->createVAO();
-    // a_frame = createRepere(10.0);
-    // a_frame->createVAO();
-
-    // myTexture.createTexture();
-    // myTexture.attachTexture();
-    // myTexture.setParameters(GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-
-    // int x;
-    // int y;
-    // int n;
-    // unsigned char* data = stbi_load((exe_path::dir() / "assets/images/testMenu.jpg").string().c_str(), &x, &y, &n, 0);
-    // if (!data) {
-    // std::cerr << "Erreur chargement image : " << stbi_failure_reason() << std::endl;
-	// }
-
-    // myTexture.attachTexture();
-	//   myTexture.loadImage(x, y, n, data);
-
-    // stbi_image_free(data);
-
-    // Sable
-    sandTexture.createTexture();
-    sandTexture.attachTexture();
-    sandTexture.setParameters(GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-    int x, y, n;
-    unsigned char* sandData = stbi_load((exe_path::dir() / "assets/images/Sand1.png").string().c_str(), &x, &y, &n, 0);
-    if (!sandData) std::cerr << "Erreur chargement: " << stbi_failure_reason() << std::endl;
-    sandTexture.attachTexture();
-    sandTexture.loadImage(x, y, n, sandData);
-    stbi_image_free(sandData);
-
-    // Eau
-    waterTexture.createTexture();
-    waterTexture.attachTexture();
-    waterTexture.setParameters(GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-    unsigned char* waterData = stbi_load((exe_path::dir() / "assets/images/Water1.png").string().c_str(), &x, &y, &n, 0);
-    if (!waterData) std::cerr << "Erreur chargement water.png : " << stbi_failure_reason() << std::endl;
-    waterTexture.attachTexture();
-    waterTexture.loadImage(x, y, n, waterData);
-    stbi_image_free(waterData);
 }
 
 void renderScene() {
@@ -116,33 +68,8 @@ void renderScene() {
     myEngine.mvMatrixStack.popMatrix();
     myEngine.updateMvMatrix();
 
-    // Texture
-    // myEngine.activateTexturing(true);
-    // myTexture.attachTexture();
-
-    // myEngine.setFlatColor(1.0, 1.0, 1.0);
-    // rectangle->draw();
-
-    // myTexture.detachTexture();
 }
-void drawTexturedTile(float x, float y, float size, GLBI_Texture& texture) {
-    myEngine.activateTexturing(true);
-    texture.attachTexture();
 
-    myEngine.mvMatrixStack.pushMatrix();
-    myEngine.mvMatrixStack.addTranslation(STP3D::Vector3D(x + size/2, y + size/2, 0.0f));
-    myEngine.mvMatrixStack.addHomothety(STP3D::Vector3D(size/2, size/2, 1.0f));
-    myEngine.updateMvMatrix();
-
-    myEngine.setFlatColor(1.0, 1.0, 1.0);
-    rectangle->draw();
-
-    myEngine.mvMatrixStack.popMatrix();
-    myEngine.updateMvMatrix();
-
-    texture.detachTexture();
-    myEngine.activateTexturing(false);
-}
 // dessin de la grille avec des carrés (pour la carte)
 void drawSquare(float x, float y, float size) {
 
@@ -179,14 +106,13 @@ void drawMap(const std::vector<std::vector<int>>& map, GLBI_Engine& myEngine) {
             int val = map[yi][xi];
 
             if (val == 0)
-                
-	        //myEngine.setFlatColor(1.0f, 1.0f, 1.0f); // blanc
-            drawTexturedTile(x, y, tileSize, sandTexture);
+
+	myEngine.setFlatColor(1.0f, 1.0f, 1.0f); // blanc
             else if (val == 1)
-            //myEngine.setFlatColor(0.0f, 0.0f, 0.0f); // noir
-            drawTexturedTile(x, y, tileSize, waterTexture);
+                	myEngine.setFlatColor(0.0f, 0.0f, 0.0f); // noir
             else
-            myEngine.setFlatColor(1.0f, 0.0f, 0.0f); // rouge
+                	myEngine.setFlatColor(1.0f, 0.0f, 0.0f); // rouge
+
             drawSquare(x, y, tileSize);
         }
     }
@@ -220,6 +146,7 @@ extern std::vector<std::vector<int>> map; // à rendre globale si besoin
 
 
 
+// pour les collisions 
 // pour les collisions (ça ne marche pas, possibilité de mettre en commentaires pour retirer les collisions)
 
 bool collision(float x, float y, const std::vector<std::vector<int>>& map) {
@@ -228,22 +155,23 @@ bool collision(float x, float y, const std::vector<std::vector<int>>& map) {
     float gridWidth = 100.0f;
     float tileSize = gridWidth / cols;
 
+    // Convertit la position en coordonnées de la grille
     int gridX = static_cast<int>((x + 50.0f) / tileSize);
+    //int gridY = static_cast<int>((y + 50.0f) / tileSize);
     int gridY = rows - 1 - static_cast<int>((y + 50.0f) / tileSize); // y inversé
 
+    // Vérifie les limites
+    if (gridX < 0 || gridX >= cols || gridY < 0 || gridY >= rows) return false;
     if (gridX < 0 || gridX >= cols || gridY < 0 || gridY >= rows) return true; // mur si hors limites
 
+    // 0 = sol, 1 = mur
+    return map[gridY][gridX] == 0;
     return map[gridY][gridX] == 1; // 1 = mur → collision
 }
 
 
 bool canMove(float newX, float newY, float size, const std::vector<std::vector<int>>& map) {
     float halfSize = size / 2.0f;
-
-    // Coins du carré
-    return collision(newX - halfSize, newY - halfSize, map) &&
-           collision(newX + halfSize, newY - halfSize, map) &&
-           collision(newX - halfSize, newY + halfSize, map) &&
            collision(newX + halfSize, newY + halfSize, map);
 }
 
@@ -282,4 +210,3 @@ void key_callback(GLFWwindow* window, int key, int scancode, int action, int mod
         }
     }
 }
-

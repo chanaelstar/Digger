@@ -32,20 +32,15 @@ void onError(int error, const char *description)
 }
 
 
-void onWindowResized(GLFWwindow* /*window*/, int width, int height){
+void onWindowResized(GLFWwindow * /*window*/, int width, int height) {
+     aspectRatio = width / (float)height;
+     glViewport(0, 0, width, height);
 
- 	aspectRatio = width / (float) height;
- 	glViewport(0, 0, width, height);
- 	if( aspectRatio > 1.0){
-		myEngine.set2DProjection(-GL_VIEW_SIZE * aspectRatio/ 2.,
- 		GL_VIEW_SIZE * aspectRatio / 2. ,
-		-GL_VIEW_SIZE / 2., GL_VIEW_SIZE / 2.);
- }
- 	else{
-		myEngine.set2DProjection(-GL_VIEW_SIZE / 2., GL_VIEW_SIZE / 2.,
- 		-GL_VIEW_SIZE / (2. * aspectRatio), 
-		GL_VIEW_SIZE / (2. * aspectRatio));
- }
+     if(aspectRatio > 1.0) {
+         myEngine.set2DProjection(-GL_VIEW_SIZE * aspectRatio / 2., GL_VIEW_SIZE * aspectRatio / 2., -GL_VIEW_SIZE / 2., GL_VIEW_SIZE / 2.);
+     } else {
+         myEngine.set2DProjection(-GL_VIEW_SIZE / 2., GL_VIEW_SIZE / 2., -GL_VIEW_SIZE / (2. * aspectRatio), GL_VIEW_SIZE / (2. * aspectRatio));
+     }
  }
 
 
@@ -112,11 +107,6 @@ int main()
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
         glEnable(GL_DEPTH_TEST);
 
-
-        /* Fix camera position */
-		myEngine.mvMatrixStack.loadIdentity();
-    	myEngine.mvMatrixStack.addRotation(1.5,Vector3D(1.0, 0.0, 0.0));
-    	myEngine.updateMvMatrix();
 
         /* Render here */
         renderScene();
