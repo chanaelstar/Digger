@@ -4,7 +4,6 @@
 #include "glbasimac/glbi_engine.hpp"
 #include "glbasimac/glbi_set_of_points.hpp"
 #include "glbasimac/glbi_convex_2D_shape.hpp"
-
 #include <iostream>
 #include <cmath>
 #include "draw_scene.hpp"
@@ -113,12 +112,15 @@ int main()
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
         glEnable(GL_DEPTH_TEST);
 
+
+        /* Fix camera position */
+		myEngine.mvMatrixStack.loadIdentity();
+    	myEngine.mvMatrixStack.addRotation(1.5,Vector3D(1.0, 0.0, 0.0));
+    	myEngine.updateMvMatrix();
+
         /* Render here */
         renderScene();
         drawScene(map); 
-
-    
-
 
 
         /* Swap front and back buffers */

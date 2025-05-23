@@ -1,5 +1,12 @@
 #pragma once
-
+#define GLFW_INCLUDE_NONE
+#include <tuple>
+#include "carte.hpp"
+#include "exe_path/exe_path.h"
+#include "glbasimac/glbi_texture.hpp"
+#include "tools/shaders.hpp"
+#include "tools/stb_image.h"
+#define STB_IMAGE_IMPLEMENTATION
 #include "glbasimac/glbi_engine.hpp"
 #include "glbasimac/glbi_set_of_points.hpp"
 #include "glbasimac/glbi_convex_2D_shape.hpp"
@@ -26,6 +33,7 @@ void renderScene();
 void drawScene(const std::vector<std::vector<int>>& map);
 void drawSquare(float x, float y, float size);
 void drawMap(const std::vector<std::vector<int>>& map);
+void drawTexturedTile(float x, float y, float size, GLBI_Texture& texture);
 
 extern std::vector<std::vector<int>> map;
 
