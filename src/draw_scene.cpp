@@ -97,7 +97,9 @@ void drawMap(const std::vector<std::vector<int>>& map, GLBI_Engine& myEngine) {
     for (int yi = 0; yi < rows; ++yi) {
         for (int xi = 0; xi < cols; ++xi) {
             float x = xi / float(cols) *100.f - 50.f;
-            float y = yi / float(rows) *100.f - 50.f;
+            // float y = yi / float(rows) *100.f - 50.f;
+            float y = (rows - 1 - yi) / float(rows) * 100.f - 50.f; // mets la carte dans le bon sens
+
 
             int val = map[yi][xi];
 
