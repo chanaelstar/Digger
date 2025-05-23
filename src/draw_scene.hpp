@@ -4,12 +4,8 @@
 #include "glbasimac/glbi_set_of_points.hpp"
 #include "glbasimac/glbi_convex_2D_shape.hpp"
 #include "tools/basic_mesh.hpp"
-
 #include "GLFW/glfw3.h"
 #include "glad/glad.h"
-#include "glbasimac/glbi_engine.hpp"
-#include "glbasimac/glbi_set_of_points.hpp"
-#include "glbasimac/glbi_convex_2D_shape.hpp"
 #include <iostream>
 
 
@@ -31,25 +27,18 @@ void drawScene(const std::vector<std::vector<int>>& map);
 void drawSquare(float x, float y, float size);
 void drawMap(const std::vector<std::vector<int>>& map);
 
+extern std::vector<std::vector<int>> map;
+
+
 
 // pour le joueur
 
-/* Variables globales accessibles depuis d'autres fichiers */
 extern float carrePosX;
 extern float carrePosY;
 extern int objectNumber;
 extern float aspectRatio;
 
-// extern GLBI_Engine myEngine;
-// extern GLBI_Set_Of_Points thePoints;
-// extern GLBI_Convex_2D_Shape carre;
-extern float aspectRatio;
-
-// /* Fonctions */
-// void initScene();
-// void renderScene();
 void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods);
-// void onWindowResized(GLFWwindow* window, int width, int height);
-// void onError(int error, const char* description);
+
 
 

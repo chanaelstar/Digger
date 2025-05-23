@@ -1,16 +1,18 @@
-// Synthèse d'image
 #define GLFW_INCLUDE_NONE
 #include "GLFW/glfw3.h"
 #include "glad/glad.h"
 #include "glbasimac/glbi_engine.hpp"
 #include "glbasimac/glbi_set_of_points.hpp"
 #include "glbasimac/glbi_convex_2D_shape.hpp"
-// Algo
+
 #include <iostream>
 #include <cmath>
 #include "draw_scene.hpp"
 #include "carte.hpp"
+#include <vector>
 
+// il n'aime pas ça 
+std::vector<std::vector<int>> map = createMap();
 using namespace glbasimac;
 
 /* Minimal time wanted between two images */
@@ -41,39 +43,6 @@ void onError(int error, const char *description)
  }
 
 
-
-// void key_callback(GLFWwindow *window, int key, int scancode, int action, int mods)
-// {
-//     if (action == GLFW_PRESS || action == GLFW_REPEAT)
-//     {
-//         switch (key)
-//         {
-//         case GLFW_KEY_ESCAPE:
-//             glfwSetWindowShouldClose(window, GL_TRUE);
-//             break;
-//         case GLFW_KEY_W:
-//             angle_phy += 1.0f;
-//             break;
-//         case GLFW_KEY_S:
-//             angle_phy -= 1.0f;
-//             break;
-//         case GLFW_KEY_A:
-//             angle_theta -= 1.0f;
-//             break;
-//         case GLFW_KEY_D:
-//             angle_theta += 1.0f;
-//             break;
-//         case GLFW_KEY_UP:
-//             dist_zoom *=0.9f;
-//             break;
-//         case GLFW_KEY_DOWN:
-//             dist_zoom *= 1.1f;
-//             break;
-//         default:
-//             break;
-//         }
-//     }
-// }
 
 int main()
 {
@@ -121,7 +90,9 @@ int main()
     // pour le player
     objectNumber = 0;
 
-    auto map = createMap();
+    // auto map = createMap();
+    // std::vector<std::vector<int>> map;
+
     printGrid(map);
 
     /* Loop until the user closes the window */
@@ -141,8 +112,6 @@ int main()
 
     
 
-        /* Fix camera position */
-        // myEngine.mvMatrixStack.loadIdentity();
 
 
         /* Swap front and back buffers */
