@@ -146,7 +146,7 @@ extern std::vector<std::vector<int>> map; // à rendre globale si besoin
 
 
 
-// pour les collisions 
+// pour les collisions (ça ne marche pas, possibilité de mettre en commentaires pour retirer les collisions)
 
 bool collision(float x, float y, const std::vector<std::vector<int>>& map) {
     int rows = map.size();
@@ -154,16 +154,14 @@ bool collision(float x, float y, const std::vector<std::vector<int>>& map) {
     float gridWidth = 100.0f;
     float tileSize = gridWidth / cols;
 
-    // Convertit la position en coordonnées de la grille
     int gridX = static_cast<int>((x + 50.0f) / tileSize);
-    int gridY = static_cast<int>((y + 50.0f) / tileSize);
+    int gridY = rows - 1 - static_cast<int>((y + 50.0f) / tileSize); // y inversé
 
-    // Vérifie les limites
-    if (gridX < 0 || gridX >= cols || gridY < 0 || gridY >= rows) return false;
+    if (gridX < 0 || gridX >= cols || gridY < 0 || gridY >= rows) return true; // mur si hors limites
 
-    // 0 = sol, 1 = mur
-    return map[gridY][gridX] == 0;
+    return map[gridY][gridX] == 1; // 1 = mur → collision
 }
+
 
 bool canMove(float newX, float newY, float size, const std::vector<std::vector<int>>& map) {
     float halfSize = size / 2.0f;
@@ -174,6 +172,8 @@ bool canMove(float newX, float newY, float size, const std::vector<std::vector<i
            collision(newX - halfSize, newY + halfSize, map) &&
            collision(newX + halfSize, newY + halfSize, map);
 }
+
+
 
 void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods)
 {
