@@ -1,6 +1,12 @@
+#define GLFW_INCLUDE_NONE
 #include "draw_scene.hpp"
 #include <tuple>
 #include "carte.hpp"
+#include "exe_path/exe_path.h"
+#include "glbasimac/glbi_texture.hpp"
+#include "tools/shaders.hpp"
+#include "tools/stb_image.h"
+#define STB_IMAGE_IMPLEMENTATION
 
 float dist_zoom{30.0};	 // Distance between origin and viewpoint
 
@@ -11,6 +17,11 @@ GLBI_Convex_2D_Shape ground{3};
 GLBI_Convex_2D_Shape carre;
 GLBI_Set_Of_Points frame(3);
 int objectNumber = 0;
+
+//Pour les sprites
+GLBI_Texture myTexture;
+StandardMesh* rectangle;
+StandardMesh* a_frame;
 
 
 void initScene(){
@@ -40,6 +51,28 @@ void initScene(){
     };
     carre.initShape(playerCoordinates);
 
+    //Application de la texture
+    rectangle = basicRect(5.0, 5.0);
+    rectangle->createVAO();
+    a_frame = createRepere(10.0);
+    a_frame->createVAO();
+
+    myTexture.createTexture();
+    myTexture.attachTexture();
+    myTexture.setParameters(GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+
+    int x;
+    int y;
+    int n;
+    unsigned char* data = stbi_load((exe_path::dir() / "assets/images/testMenu.jpg").string().c_str(), &x, &y, &n, 0);
+    if (!data) {
+    std::cerr << "Erreur chargement image : " << stbi_failure_reason() << std::endl;
+	}
+
+    myTexture.attachTexture();
+	  myTexture.loadImage(x, y, n, data);
+
+    stbi_image_free(data);
 }
 
 void renderScene() {
@@ -68,6 +101,14 @@ void renderScene() {
     myEngine.mvMatrixStack.popMatrix();
     myEngine.updateMvMatrix();
 
+    // Texture
+    myEngine.activateTexturing(true);
+    myTexture.attachTexture();
+
+    myEngine.setFlatColor(1.0, 1.0, 1.0);
+    rectangle->draw();
+
+    myTexture.detachTexture();
 }
 
 // dessin de la grille avec des carrés (pour la carte)

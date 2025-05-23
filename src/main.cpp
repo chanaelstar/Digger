@@ -24,22 +24,29 @@ static const int WINDOW_WIDTH = 800;
 static const int WINDOW_HEIGHT = 800;
 
 /* Espace virtuel */
-static const float GL_VIEW_SIZE = 100.0;
+static const float GL_VIEW_SIZE = 10.0;
 
 /* Error handling function */
 void onError(int error, const char *description)
 {
     std::cout << "GLFW Error (" << error << ") : " << description << std::endl;
 }
- void onWindowResized(GLFWwindow * /*window*/, int width, int height) {
-     aspectRatio = width / (float)height;
-     glViewport(0, 0, width, height);
- 
-     if(aspectRatio > 1.0) {
-         myEngine.set2DProjection(-GL_VIEW_SIZE * aspectRatio / 2., GL_VIEW_SIZE * aspectRatio / 2., -GL_VIEW_SIZE / 2., GL_VIEW_SIZE / 2.);
-     } else {
-         myEngine.set2DProjection(-GL_VIEW_SIZE / 2., GL_VIEW_SIZE / 2., -GL_VIEW_SIZE / (2. * aspectRatio), GL_VIEW_SIZE / (2. * aspectRatio));
-     }
+
+
+void onWindowResized(GLFWwindow* /*window*/, int width, int height){
+
+ 	aspectRatio = width / (float) height;
+ 	glViewport(0, 0, width, height);
+ 	if( aspectRatio > 1.0){
+		myEngine.set2DProjection(-GL_VIEW_SIZE * aspectRatio/ 2.,
+ 		GL_VIEW_SIZE * aspectRatio / 2. ,
+		-GL_VIEW_SIZE / 2., GL_VIEW_SIZE / 2.);
+ }
+ 	else{
+		myEngine.set2DProjection(-GL_VIEW_SIZE / 2., GL_VIEW_SIZE / 2.,
+ 		-GL_VIEW_SIZE / (2. * aspectRatio), 
+		GL_VIEW_SIZE / (2. * aspectRatio));
+ }
  }
 
 
