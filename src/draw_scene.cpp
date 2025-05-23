@@ -102,6 +102,8 @@ void renderScene() {
     myEngine.updateMvMatrix();
     carre.drawShape();
     myEngine.mvMatrixStack.popMatrix();
+    myEngine.updateMvMatrix();
+
 }
 
 // dessin de la grille avec des carrés
