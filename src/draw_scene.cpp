@@ -84,6 +84,34 @@ void drawSquare(float x, float y, float size) {
 
 }
 
+void drawMenu() {
+    glClearColor(0.1f, 0.1f, 0.3f, 1.f);
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    glEnable(GL_DEPTH_TEST);
+
+    // Bouton Demarrer
+    myEngine.setFlatColor(0.2f, 0.8f, 0.2f); // Vert
+    myEngine.mvMatrixStack.pushMatrix();
+    myEngine.mvMatrixStack.addTranslation(STP3D::Vector3D(0.0f, 2.0f, 0.0f));
+    myEngine.mvMatrixStack.addHomothety(STP3D::Vector3D(3.0f, 1.0f, 1.0f));
+    myEngine.updateMvMatrix();
+    carre.changeNature(GL_TRIANGLE_FAN);
+    carre.drawShape();
+    myEngine.mvMatrixStack.popMatrix();
+    myEngine.updateMvMatrix();
+
+    // Bouton Quitter
+    myEngine.setFlatColor(0.8f, 0.2f, 0.2f); // Rouge
+    myEngine.mvMatrixStack.pushMatrix();
+    myEngine.mvMatrixStack.addTranslation(STP3D::Vector3D(0.0f, -2.0f, 0.0f));
+    myEngine.mvMatrixStack.addHomothety(STP3D::Vector3D(3.0f, 1.0f, 1.0f));
+    myEngine.updateMvMatrix();
+    carre.changeNature(GL_TRIANGLE_FAN);
+    carre.drawShape();
+    myEngine.mvMatrixStack.popMatrix();
+    myEngine.updateMvMatrix();
+
+}
 void drawMap(const std::vector<std::vector<int>>& map, GLBI_Engine& myEngine) {
     int rows = map.size();
     int cols = map[0].size();

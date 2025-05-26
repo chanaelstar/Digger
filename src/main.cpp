@@ -25,6 +25,15 @@ static const int WINDOW_HEIGHT = 800;
 /* Espace virtuel */
 static const float GL_VIEW_SIZE = 10.0;
 
+// Menu
+enum class AppState {
+    MENU,
+    JEU,
+    QUIT
+};
+
+AppState currentState = AppState::MENU;
+
 /* Error handling function */
 void onError(int error, const char *description)
 {
@@ -43,7 +52,27 @@ void onWindowResized(GLFWwindow * /*window*/, int width, int height) {
      }
  }
 
+void mouse_button_callback(GLFWwindow* window, int button, int action, int mods) {
+    if (button == GLFW_MOUSE_BUTTON_LEFT && action == GLFW_PRESS) {
+        double xpos, ypos;
+        glfwGetCursorPos(window, &xpos, &ypos);
 
+        int width, height;
+        glfwGetWindowSize(window, &width, &height);
+
+        // Convertir en coordonnées OpenGL
+        float x = (xpos / width) * GL_VIEW_SIZE - GL_VIEW_SIZE / 2.f;
+        float y = ((height - ypos) / height) * GL_VIEW_SIZE - GL_VIEW_SIZE / 2.f;
+
+        if (currentState == AppState::MENU) {
+            if (x > -3 && x < 3 && y > 1 && y < 3) {
+                currentState = AppState::JEU; 
+            } else if (x > -3 && x < 3 && y > -3 && y < -1) {
+                currentState = AppState::QUIT;
+            }
+        }
+    }
+}
 
 int main()
 {
@@ -68,6 +97,7 @@ int main()
     // -- Callbacks --
     glfwSetWindowSizeCallback(window, onWindowResized);
     glfwSetKeyCallback(window, key_callback);
+    glfwSetMouseButtonCallback(window, mouse_button_callback);
 
 
     // Make the window's context current
@@ -102,16 +132,22 @@ int main()
         /* Get time (in second) at loop beginning */
         double startTime = glfwGetTime();
 
-         // Efface l'écran (à faire avant tout dessin)
-        glClearColor(0.2f, 0.f, 0.f, 0.f);
-        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-        glEnable(GL_DEPTH_TEST);
+        if (currentState == AppState::MENU) {
+            drawMenu();
+        }
+        
+        else if (currentState == AppState::JEU) {
+            glClearColor(0.2f, 0.f, 0.f, 0.f);
+            glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+            glEnable(GL_DEPTH_TEST);
 
+            renderScene();
+            drawScene(map);
+        }
 
-        /* Render here */
-        renderScene();
-        drawScene(map); 
-
+        else if (currentState == AppState::QUIT) {
+            glfwSetWindowShouldClose(window, GLFW_TRUE);
+        }
 
         /* Swap front and back buffers */
         glfwSwapBuffers(window);
