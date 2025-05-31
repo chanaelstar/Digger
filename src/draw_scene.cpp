@@ -1,18 +1,67 @@
+#define STB_IMAGE_IMPLEMENTATION
+#include "tools/stb_image.h"
 #include "draw_scene.hpp"
-#include <tuple>
-#include "carte.hpp"
 
 float dist_zoom{30.0};	 // Distance between origin and viewpoint
+
+/* Position du carré */
+float carrePosX = 0.0f;
+float carrePosY = 0.0f;
+
+float aspectRatio = 1.0f; // ou une autre valeur par défaut
+
+/* Espace virtuel */
+static const float GL_VIEW_SIZE = 10.0;
+
+extern std::vector<std::vector<int>> map;
 
 /* OpenGL Engine */
 GLBI_Engine myEngine;
 GLBI_Set_Of_Points somePoints(3);
 GLBI_Convex_2D_Shape ground{3};
 GLBI_Convex_2D_Shape carre;
+GLBI_Set_Of_Points thePoints;
 GLBI_Set_Of_Points frame(3);
 int objectNumber = 0;
 
+struct Vector2D {
+    float x;
+    float y;
+};
 
+int playerGridX = 1; // Position initiale du joueur en indices de grille
+int playerGridY = 1;
+
+// Convertit des indices de grille en coordonnées OpenGL (centre de la case)
+Vector2D gridToWorld(int gridX, int gridY, int rows, int cols) {
+    float x = gridX + 0.5f;
+    float y = rows - 1 - gridY + 0.5f;
+    return {x, y};
+}
+
+// Convertit une position OpenGL (x, y) en indices de grille
+std::pair<int, int> worldToGrid(float x, float y, int rows, int cols) {
+    int gridX = int(x);
+    int gridY = rows - 1 - int(y);
+    return {gridX, gridY};
+}
+
+// Initialisation de la position du joueur
+void initPlayerPosition() {
+    for (int y = 0; y < map.size(); ++y) {
+        for (int x = 0; x < map[0].size(); ++x) {
+            if (map[y][x] == 0) { // case blanche
+                playerGridX = x;
+                playerGridY = y;
+
+                Vector2D startPos = gridToWorld(x, y, map.size(), map[0].size());
+                carrePosX = startPos.x;
+                carrePosY = startPos.y;
+                return;
+            }
+        }
+    }
+}
 void initScene(){
 	std::vector<float> carreCoordinates = {
         -0.5f, -0.5f,
@@ -23,66 +72,28 @@ void initScene(){
 	std::vector<float> points{0.0, 0.0, 0.0};
 	somePoints.initSet(points, 1.0, 1.0, 1.0);
 
-	std::vector<float> baseCarre{-10.0, -10.0, 0.0,
-								 10.0, -10.0, 0.0,
-								 10.0, 10.0, 0.0,
-								 -10.0, 10.0, 0.0};
+	std::vector<float> baseCarre{
+        -10.0, -10.0, 0.0,
+	    10.0, -10.0, 0.0,
+		10.0, 10.0, 0.0,
+		-10.0, 10.0, 0.0
+    };
 	carre.initShape(carreCoordinates);
 	ground.initShape(baseCarre);
 	carre.changeNature(GL_TRIANGLE_FAN);
 	ground.changeNature(GL_TRIANGLE_FAN);
 
-	    std::vector<float> playerCoordinates = {
+	std::vector<float> playerCoordinates = {
         -1.f, -1.f,
          1.f, -1.f,
          1.f,  1.f,
         -1.f,  1.f
     };
     carre.initShape(playerCoordinates);
-
+    initPlayerPosition();
 }
 
-void renderScene() {
 
-    // Met à jour la projection 2D directement
-    if (aspectRatio > 1.0f) {
-        myEngine.set2DProjection(-50.f * aspectRatio, 50.f * aspectRatio, -50.f, 50.f);
-    } else {
-        myEngine.set2DProjection(-50.f, 50.f, -50.f / aspectRatio, 50.f / aspectRatio);
-    }
-
-            /* Fix camera position */
-
-        myEngine.mvMatrixStack.loadIdentity(); 
-
-
-
-    // joueur
-    myEngine.setFlatColor(1.0f, 0.0f, 0.0f);
-    carre.changeNature(GL_TRIANGLE_FAN);
-
-    myEngine.mvMatrixStack.pushMatrix();
-    myEngine.mvMatrixStack.addTranslation(STP3D::Vector3D(carrePosX, carrePosY, 0.0f));
-    myEngine.updateMvMatrix();
-    carre.drawShape();
-    myEngine.mvMatrixStack.popMatrix();
-    myEngine.updateMvMatrix();
-
-}
-
-// dessin de la grille avec des carrés (pour la carte)
-void drawSquare(float x, float y, float size) {
-
-    carre.changeNature(GL_TRIANGLE_FAN);
-    myEngine.mvMatrixStack.pushMatrix();
-    myEngine.mvMatrixStack.addTranslation(STP3D::Vector3D(x+size/2, y+size/2, 0.0f));
-    myEngine.mvMatrixStack.addHomothety(STP3D::Vector3D(size/2, size/2, 0.0f));
-    myEngine.updateMvMatrix();
-    carre.drawShape();
-    myEngine.mvMatrixStack.popMatrix();
-    myEngine.updateMvMatrix();
-
-}
 
 void drawMenu() {
     glClearColor(0.1f, 0.1f, 0.3f, 1.f);
@@ -110,40 +121,69 @@ void drawMenu() {
     carre.drawShape();
     myEngine.mvMatrixStack.popMatrix();
     myEngine.updateMvMatrix();
-
 }
+
+
+
 void drawMap(const std::vector<std::vector<int>>& map, GLBI_Engine& myEngine) {
     int rows = map.size();
     int cols = map[0].size();
-
-    // Taille totale de la grille en "unités OpenGL"
-
-    float totalHeight = 100.0f;
-
-    // Taille d'une case adaptée dynamiquement
-    float tileSize = totalHeight / rows;
-
-
     for (int yi = 0; yi < rows; ++yi) {
         for (int xi = 0; xi < cols; ++xi) {
-            float x = xi / float(cols) *100.f - 50.f;
-            // float y = yi / float(rows) *100.f - 50.f;
-            float y = (rows - 1 - yi) / float(rows) * 100.f - 50.f; // mets la carte dans le bon sens
-
+            float x = xi + 0.5f;
+            float y = rows - 1 - yi + 0.5f;
 
             int val = map[yi][xi];
 
-            if (val == 0)
-
-	myEngine.setFlatColor(1.0f, 1.0f, 1.0f); // blanc
-            else if (val == 1)
-                	myEngine.setFlatColor(0.0f, 0.0f, 0.0f); // noir
-            else
-                	myEngine.setFlatColor(1.0f, 0.0f, 0.0f); // rouge
-
-            drawSquare(x, y, tileSize);
+            if (val == 0) {
+                myEngine.setFlatColor(1.0f, 1.0f, 1.0f); // blanc
+                drawSquare(x, y, 1.0f);
+            }
+            else if (val == 1) {
+                myEngine.setFlatColor(0.0f, 0.0f, 0.0f); // noir
+                drawSquare(x, y, 1.0f);
+            }
+            else {
+                myEngine.setFlatColor(1.0f, 0.0f, 0.0f); // rouge
+                drawSquare(x, y, 1.0f);
+            }
         }
     }
+}
+
+void renderScene() {
+    int rows = map.size();
+    int cols = map[0].size();
+    float playerSize = 0.99f; // 80% de la case
+
+    // Affichage plein écran
+    myEngine.set2DProjection(0.f, float(cols), 0.f, float(rows));
+
+    myEngine.mvMatrixStack.loadIdentity();
+
+    // joueur
+    myEngine.setFlatColor(1.0f, 0.0f, 0.0f);
+    carre.changeNature(GL_TRIANGLE_FAN);
+
+    myEngine.mvMatrixStack.pushMatrix();
+    myEngine.mvMatrixStack.addTranslation(STP3D::Vector3D(carrePosX, carrePosY, 0.0f));
+    myEngine.mvMatrixStack.addHomothety(STP3D::Vector3D(playerSize/2, playerSize/2, 1.0f));
+    myEngine.updateMvMatrix();
+    carre.drawShape();
+    myEngine.mvMatrixStack.popMatrix();
+    myEngine.updateMvMatrix();
+}
+
+// dessin de la grille avec des carrés (pour la carte)
+void drawSquare(float x, float y, float size) {
+    carre.changeNature(GL_TRIANGLE_FAN);
+    myEngine.mvMatrixStack.pushMatrix();
+    myEngine.mvMatrixStack.addTranslation(STP3D::Vector3D(x, y, 0.0f));
+    myEngine.mvMatrixStack.addHomothety(STP3D::Vector3D(size/2, size/2, 0.0f));
+    myEngine.updateMvMatrix();
+    carre.drawShape();
+    myEngine.mvMatrixStack.popMatrix();
+    myEngine.updateMvMatrix();
 }
 
 
@@ -155,52 +195,16 @@ void drawScene(const std::vector<std::vector<int>>& map)
 	drawMap(map, myEngine);
 }
 
-// pour le joueur 
-
-
-/* Position du carré */
-float carrePosX = 0.0f;
-float carrePosY = 0.0f;
-
-/* Moteur graphique et objets */
-GLBI_Set_Of_Points thePoints;
-
-float aspectRatio = 1.0f; // ou une autre valeur par défaut
-
-
-extern std::vector<std::vector<int>> map; // à rendre globale si besoin
-
-
-
-
-
-// pour les collisions 
+// pour le joueur
 // pour les collisions (ça ne marche pas, possibilité de mettre en commentaires pour retirer les collisions)
 
-bool collision(float x, float y, const std::vector<std::vector<int>>& map) {
+bool canMoveTo(int gridX, int gridY, const std::vector<std::vector<int>>& map) {
     int rows = map.size();
     int cols = map[0].size();
-    float gridWidth = 100.0f;
-    float tileSize = gridWidth / cols;
 
-    // Convertit la position en coordonnées de la grille
-    int gridX = static_cast<int>((x + 50.0f) / tileSize);
-    //int gridY = static_cast<int>((y + 50.0f) / tileSize);
-    int gridY = rows - 1 - static_cast<int>((y + 50.0f) / tileSize); // y inversé
-
-    // Vérifie les limites
-    if (gridX < 0 || gridX >= cols || gridY < 0 || gridY >= rows) return false;
-    if (gridX < 0 || gridX >= cols || gridY < 0 || gridY >= rows) return true; // mur si hors limites
-
-    // 0 = sol, 1 = mur
-    return map[gridY][gridX] == 0;
-    return map[gridY][gridX] == 1; // 1 = mur → collision
-}
-
-
-bool canMove(float newX, float newY, float size, const std::vector<std::vector<int>>& map) {
-    float halfSize = size / 2.0f;
-           collision(newX + halfSize, newY + halfSize, map);
+    if (gridX < 0 || gridX >= cols || gridY < 0 || gridY >= rows)
+        return false; // hors limites
+    return map[gridY][gridX] == 0; // 0 = case blanche
 }
 
 
@@ -209,32 +213,36 @@ void key_callback(GLFWwindow* window, int key, int scancode, int action, int mod
 {
     if (action == GLFW_PRESS || action == GLFW_REPEAT)
     {
-        float newX = carrePosX;
-        float newY = carrePosY;
-        float playerSize = 2.0f; // taille du carré joueur
+        int newGridX = playerGridX;
+        int newGridY = playerGridY;
 
         switch (key)
         {
-        case GLFW_KEY_W:
-            newY += 0.1f;
+        case GLFW_KEY_UP:
+            newGridY -= 1;
             break;
-        case GLFW_KEY_S:
-            newY -= 0.1f;
+        case GLFW_KEY_DOWN:
+            newGridY += 1;
             break;
-        case GLFW_KEY_A:
-            newX -= 0.1f;
+        case GLFW_KEY_LEFT:
+            newGridX -= 1;
             break;
-        case GLFW_KEY_D:
-            newX += 0.1f;
+        case GLFW_KEY_RIGHT:
+            newGridX += 1;
             break;
         default:
             break;
         }
 
-        // Collision
-        if (canMove(newX, newY, playerSize, map)) {
-            carrePosX = newX;
-            carrePosY = newY;
+        if (canMoveTo(newGridX, newGridY, map))
+        {
+            playerGridX = newGridX;
+            playerGridY = newGridY;
+
+            auto pos = gridToWorld(playerGridX, playerGridY, map.size(), map[0].size());
+            carrePosX = pos.x;
+            carrePosY = pos.y;
         }
     }
 }
+
