@@ -29,8 +29,8 @@ struct Vector2D {
     float y;
 };
 
-int playerGridX = 1; // Position initiale du joueur en indices de grille
-int playerGridY = 1;
+float playerX = 1.5f; // Position initiale du joueur en indices de grille
+float playerY = 1.5f;
 
 // Convertit des indices de grille en coordonnées OpenGL (centre de la case)
 Vector2D gridToWorld(int gridX, int gridY, int rows, int cols) {
@@ -51,12 +51,12 @@ void initPlayerPosition() {
     for (int y = 0; y < map.size(); ++y) {
         for (int x = 0; x < map[0].size(); ++x) {
             if (map[y][x] == 0) { // case blanche
-                playerGridX = x;
-                playerGridY = y;
+                playerX = x + 0.5f;
+                playerY = map.size() - 1 - y + 0.5f;
 
-                Vector2D startPos = gridToWorld(x, y, map.size(), map[0].size());
-                carrePosX = startPos.x;
-                carrePosY = startPos.y;
+                // Vector2D startPos = gridToWorld(x, y, map.size(), map[0].size());
+                // carrePosX = startPos.x;
+                // carrePosY = startPos.y;
                 return;
             }
         }
@@ -154,7 +154,7 @@ void drawMap(const std::vector<std::vector<int>>& map, GLBI_Engine& myEngine) {
 void renderScene() {
     int rows = map.size();
     int cols = map[0].size();
-    float playerSize = 0.99f; // 80% de la case
+    float playerSize = 0.95f; 
 
     // Affichage plein écran
     myEngine.set2DProjection(0.f, float(cols), 0.f, float(rows));
@@ -166,7 +166,7 @@ void renderScene() {
     carre.changeNature(GL_TRIANGLE_FAN);
 
     myEngine.mvMatrixStack.pushMatrix();
-    myEngine.mvMatrixStack.addTranslation(STP3D::Vector3D(carrePosX, carrePosY, 0.0f));
+    myEngine.mvMatrixStack.addTranslation(STP3D::Vector3D(playerX, playerY, 0.0f));
     myEngine.mvMatrixStack.addHomothety(STP3D::Vector3D(playerSize/2, playerSize/2, 1.0f));
     myEngine.updateMvMatrix();
     carre.drawShape();
@@ -198,13 +198,28 @@ void drawScene(const std::vector<std::vector<int>>& map)
 // pour le joueur
 // pour les collisions (ça ne marche pas, possibilité de mettre en commentaires pour retirer les collisions)
 
-bool canMoveTo(int gridX, int gridY, const std::vector<std::vector<int>>& map) {
+bool canMoveSquare(float x, float y, float playerSize, const std::vector<std::vector<int>>& map) {
     int rows = map.size();
     int cols = map[0].size();
+    float half = playerSize / 2.0f;
 
-    if (gridX < 0 || gridX >= cols || gridY < 0 || gridY >= rows)
-        return false; // hors limites
-    return map[gridY][gridX] == 0; // 0 = case blanche
+    // On teste les 4 coins du joueur
+    std::pair<int, int> corners[4] = {
+        worldToGrid(x - half, y - half, rows, cols),
+        worldToGrid(x + half, y - half, rows, cols),
+        worldToGrid(x - half, y + half, rows, cols),
+        worldToGrid(x + half, y + half, rows, cols)
+    };
+
+    for (int i = 0; i < 4; ++i) {
+        int gridX = corners[i].first;
+        int gridY = corners[i].second;
+        if (gridX < 0 || gridX >= cols || gridY < 0 || gridY >= rows)
+            return false;
+        if (map[gridY][gridX] != 0)
+            return false;
+    }
+    return true;
 }
 
 
@@ -213,36 +228,32 @@ void key_callback(GLFWwindow* window, int key, int scancode, int action, int mod
 {
     if (action == GLFW_PRESS || action == GLFW_REPEAT)
     {
-        int newGridX = playerGridX;
-        int newGridY = playerGridY;
+        float step = 0.1f;
+        float newX = playerX;
+        float newY = playerY;
+        float playerSize = 0.95f;
 
         switch (key)
         {
         case GLFW_KEY_UP:
-            newGridY -= 1;
+            newY += step;
             break;
         case GLFW_KEY_DOWN:
-            newGridY += 1;
+            newY -= step;
             break;
         case GLFW_KEY_LEFT:
-            newGridX -= 1;
+            newX -= step;
             break;
         case GLFW_KEY_RIGHT:
-            newGridX += 1;
+            newX += step;
             break;
         default:
             break;
         }
-
-        if (canMoveTo(newGridX, newGridY, map))
+        if (canMoveSquare(newX, newY, playerSize, map))
         {
-            playerGridX = newGridX;
-            playerGridY = newGridY;
-
-            auto pos = gridToWorld(playerGridX, playerGridY, map.size(), map[0].size());
-            carrePosX = pos.x;
-            carrePosY = pos.y;
+            playerX = newX;
+            playerY = newY;
         }
     }
 }
-
