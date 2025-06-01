@@ -77,5 +77,32 @@ std::vector<std::vector<int>> createMap(){
         simulateStep(grid);
     }
 
+    //Blocs minables
+    int yellowProbability = 5; 
+    for (int y = 0; y < HEIGHT; ++y) {
+    for (int x = 0; x < WIDTH; ++x) {
+        if (grid[y][x] == 0) {
+            bool isEdge = false;
+            if ((y > 0 && grid[y-1][x] == 1) || // haut
+                (y < HEIGHT-1 && grid[y+1][x] == 1) || // bas
+                (x > 0 && grid[y][x-1] == 1) || // gauche
+                (x < WIDTH-1 && grid[y][x+1] == 1)) { // droite
+                isEdge = true;
+            }
+            if (isEdge && (rand() % 100 < yellowProbability)) {
+                grid[y][x] = 2; 
+            }
+        }
+    }
+    }
+
+    int blueProbability = 1; 
+    for (int y = 0; y < HEIGHT; ++y) {
+        for (int x = 0; x < WIDTH; ++x) {
+            if (grid[y][x] == 0 && (rand() % 100 < blueProbability)) {
+                grid[y][x] = 3; 
+            }
+        }
+    }
     return grid;
 }

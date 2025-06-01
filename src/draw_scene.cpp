@@ -53,10 +53,6 @@ void initPlayerPosition() {
             if (map[y][x] == 0) { // case blanche
                 playerX = x + 0.5f;
                 playerY = map.size() - 1 - y + 0.5f;
-
-                // Vector2D startPos = gridToWorld(x, y, map.size(), map[0].size());
-                // carrePosX = startPos.x;
-                // carrePosY = startPos.y;
                 return;
             }
         }
@@ -143,6 +139,14 @@ void drawMap(const std::vector<std::vector<int>>& map, GLBI_Engine& myEngine) {
                 myEngine.setFlatColor(0.0f, 0.0f, 0.0f); // noir
                 drawSquare(x, y, 1.0f);
             }
+            else if (val == 2) {
+                myEngine.setFlatColor(1.0f, 1.0f, 0.0f); // jaune (les blocs minables)
+                drawSquare(x, y, 1.0f);
+            }
+            else if (val == 3) {
+                myEngine.setFlatColor(0.0f, 0.0f, 1.0f); // bleu (les récompenses)
+                drawSquare(x, y, 1.0f);
+            }
             else {
                 myEngine.setFlatColor(1.0f, 0.0f, 0.0f); // rouge
                 drawSquare(x, y, 1.0f);
@@ -216,7 +220,7 @@ bool canMoveSquare(float x, float y, float playerSize, const std::vector<std::ve
         int gridY = corners[i].second;
         if (gridX < 0 || gridX >= cols || gridY < 0 || gridY >= rows)
             return false;
-        if (map[gridY][gridX] != 0)
+        if (map[gridY][gridX] == 1 )
             return false;
     }
     return true;
@@ -228,7 +232,7 @@ void key_callback(GLFWwindow* window, int key, int scancode, int action, int mod
 {
     if (action == GLFW_PRESS || action == GLFW_REPEAT)
     {
-        float step = 0.1f;
+        float step = 0.15f;
         float newX = playerX;
         float newY = playerY;
         float playerSize = 0.95f;
@@ -254,6 +258,15 @@ void key_callback(GLFWwindow* window, int key, int scancode, int action, int mod
         {
             playerX = newX;
             playerY = newY;
+
+            // Vérification des collisions avec les blocs minables
+            auto [gridX, gridY] = worldToGrid(playerX, playerY, map.size(), map[0].size());
+
+            if (gridX >= 0 && gridX < map[0].size() && gridY >= 0 && gridY < map.size()) {
+                if (map[gridY][gridX] == 2 || map[gridY][gridX] == 3) {
+                    map[gridY][gridX] = 0; // Le bloc devient vide
+                }
+            }
         }
     }
 }
