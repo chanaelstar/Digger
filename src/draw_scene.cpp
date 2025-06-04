@@ -1,9 +1,6 @@
 #define STB_IMAGE_IMPLEMENTATION
 #include "tools/stb_image.h"
 #include "draw_scene.hpp"
-
-
-// A supprimer si ça marche pas
 #include "enemy.hpp"
 #include "flow_field.hpp"
 
@@ -11,6 +8,8 @@ std::vector<Enemy> enemies;
 FlowField flowField;
 int targetX = 25; // Exemple : centre de la carte
 int targetY = 15;
+int lastPlayerGridX = -1;
+int lastPlayerGridY = -1;
 
 // std::vector<std::vector<int>> map; // définition de la variable extern
 // 
@@ -105,6 +104,39 @@ void initScene(){
     };
     carre.initShape(playerCoordinates);
     initPlayerPosition();
+
+    // Pour les ennemis
+    lastPlayerGridX = -1;
+    lastPlayerGridY = -1;
+
+
+    flowField = computeFlowField(map, targetX, targetY); // cible = joueur 
+    
+
+enemies.clear();
+int enemyCount = 5;
+int triesMax = 1000;
+
+for (int i = 0; i < enemyCount; ++i) {
+    int tries = 0;
+    int x, y;
+    do {
+        x = rand() % map[0].size();
+        y = rand() % map.size();
+        tries++;
+        // On vérifie que la case est blanche (0)
+    } while ((map[y][x] != 0) && tries < triesMax);
+
+    if (tries < triesMax) {
+        Enemy e;
+        // Place l'ennemi au centre de la case blanche
+        e.position = { x + 0.5f, map.size() - 1 - y + 0.5f };
+        e.speed = 2.0f;
+        e.direction = {0, 0};
+        e.changeDirTimer = 0.0f;
+        enemies.push_back(e);
+    }
+}
 
 //         // === Génération de la carte ===
 //     map = createMap();
@@ -230,6 +262,15 @@ void drawVictoryScreen() {
     myEngine.updateMvMatrix();
 }
 
+
+float getDeltaTime() {
+    static auto lastTime = std::chrono::high_resolution_clock::now();
+    auto currentTime = std::chrono::high_resolution_clock::now();
+    std::chrono::duration<float> elapsed = currentTime - lastTime;
+    lastTime = currentTime;
+    return elapsed.count();
+}
+
 void renderScene() {
 
      if (victory) {
@@ -237,12 +278,29 @@ void renderScene() {
         return;
     }
     
+    float deltaTime = getDeltaTime();
     int rows = map.size();
     int cols = map[0].size();
     float playerSize = 0.95f; 
 
-    // test
-        float enemySize = 0.8f;
+    float enemySize = 0.8f;
+
+    // Convertir la position joueur en coordonnées grille (target)
+    int targetGridX = static_cast<int>(playerX);
+    int targetGridY = map.size() - 1 - static_cast<int>(playerY);
+
+    // Recalculer le flow field uniquement si la cible a changé
+    if (targetGridX != lastPlayerGridX || targetGridY != lastPlayerGridY) {
+        flowField = computeFlowField(map, targetGridX, targetGridY);
+        lastPlayerGridX = targetGridX;
+        lastPlayerGridY = targetGridY;
+    }
+
+    // Mise à jour des ennemis
+    for (auto& enemy : enemies) {
+    enemy.update(flowField, map, deltaTime);
+    }
+
 
 
     // Affichage plein écran
@@ -263,7 +321,7 @@ void renderScene() {
     myEngine.updateMvMatrix();
 
         // === Affichage des ennemis ===
-    myEngine.setFlatColor(0.0f, 0.0f, 1.0f); // Bleu pour les ennemis
+    myEngine.setFlatColor(1.0f, 0.0f, 1.0f); // Rose pour les ennemis
     carre.changeNature(GL_TRIANGLE_FAN);
       for (const auto& enemy : enemies) {
         myEngine.mvMatrixStack.pushMatrix();
@@ -277,12 +335,6 @@ void renderScene() {
     
 }
 
-// test
-void updateEnemies(float deltaTime) {
-    for (auto& enemy : enemies) {
-        enemy.update(flowField, deltaTime);
-    }
-}
 
 // dessin de la grille avec des carrés (pour la carte)
 void drawSquare(float x, float y, float size) {

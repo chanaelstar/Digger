@@ -9,10 +9,8 @@
 #include "draw_scene.hpp"
 #include "carte.hpp"
 #include <vector>
-
 #include "enemy.hpp"
 #include "flow_field.hpp"
-#include "draw_scene.hpp"
 
 
 float lastTime = 0.0f;

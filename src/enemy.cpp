@@ -2,27 +2,58 @@
 #include <cmath>
 #include <iostream>
 
+std::pair<int, int> worldToGrid(float x, float y, int rows, int cols);
+// Convertit une position OpenGL (x, y) en indices de grille
+std::pair<int, int> worldToGrid(float x, float y, int rows, int cols);
 
-void Enemy::update(const FlowField& flowField, float deltaTime) {
-    int cellX = static_cast<int>(position.x);
-    int cellY = static_cast<int>(position.y);
+bool canMoveEnemy(float x, float y, float enemySize, const std::vector<std::vector<int>>& map) {
+    int rows = map.size();
+    int cols = map[0].size();
+    float half = enemySize / 2.0f;
 
-    if (cellY < 0 || cellY >= flowField.size() || cellX < 0 || cellX >= flowField[0].size())
-        return;
+    // On teste les 4 coins de l'ennemi
+    std::pair<int, int> corners[4] = {
+        worldToGrid(x - half, y - half, rows, cols),
+        worldToGrid(x + half, y - half, rows, cols),
+        worldToGrid(x - half, y + half, rows, cols),
+        worldToGrid(x + half, y + half, rows, cols)
+    };
 
-    Direction dir = flowField[cellY][cellX];
+    for (int i = 0; i < 4; ++i) {
+        int gridX = corners[i].first;
+        int gridY = corners[i].second;
+        if (gridX < 0 || gridX >= cols || gridY < 0 || gridY >= rows)
+            return false;
+        if (map[gridY][gridX] == 1 )
+            return false;
+    }
+    return true;
+}
 
-    Vec2 direction = { static_cast<float>(dir.dx), static_cast<float>(dir.dy) };
-    float length = std::sqrt(direction.x * direction.x + direction.y * direction.y);
+void Enemy::update(const FlowField& /*flowField*/, const std::vector<std::vector<int>>& map, float deltaTime) {
+    float enemySize = 0.8f;
 
-    if (length > 0.01f) {
-        direction.x /= length;
-        direction.y /= length;
+    // Diminue le timer
+    changeDirTimer -= deltaTime;
 
-        position.x += direction.x * speed * deltaTime;
-        position.y += direction.y * speed * deltaTime;
+    // Si timer écoulé ou direction nulle, choisis une nouvelle direction aléatoire
+    if (changeDirTimer <= 0.0f || (direction.x == 0 && direction.y == 0)) {
+        int dirs[4][2] = { {1,0}, {-1,0}, {0,1}, {0,-1} };
+        int idx = rand() % 4;
+        direction.x = static_cast<float>(dirs[idx][0]);
+        direction.y = static_cast<float>(dirs[idx][1]);
+        changeDirTimer = 1.0f + (rand() % 100) / 100.0f; // entre 1 et 2 secondes
     }
 
-        std::cout << "Enemy position: (" << position.x << ", " << position.y << ")\n";
+    // Tente d'avancer dans la direction courante
+    float newX = position.x + direction.x * speed * deltaTime;
+    float newY = position.y + direction.y * speed * deltaTime;
 
+    if (canMoveEnemy(newX, newY, enemySize, map)) {
+        position.x = newX;
+        position.y = newY;
+    } else {
+        // Si bloqué, force un changement de direction au prochain update
+        changeDirTimer = 0.0f;
+    }
 }
