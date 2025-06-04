@@ -104,32 +104,32 @@ void initScene(){
     carre.initShape(playerCoordinates);
     initPlayerPosition();
 
-    //     // === Génération de la carte ===
-    // map = createMap();
+//         // === Génération de la carte ===
+//     map = createMap();
 
-    // // === Position de la cible (par exemple centre) ===
-    // targetX = map[0].size() / 2;
-    // targetY = map.size() / 2;
+//     // === Position de la cible (par exemple centre) ===
+//     targetX = map[0].size() / 2;
+//     targetY = map.size() / 2;
 
-    // // === Calcul du flow field ===
-    // flowField = computeFlowField(map, targetX, targetY);
+//     // === Calcul du flow field ===
+//     flowField = computeFlowField(map, targetX, targetY);
 
-    // === Création des ennemis ===
-    // enemies.clear();
-    // int enemyCount = 5;
+//    // === Création des ennemis ===
+//     enemies.clear();
+//     int enemyCount = 5;
 
-    // for (int i = 0; i < enemyCount; ++i) {
-    //     int x, y;
-    //     do {
-    //         x = rand() % map[0].size();
-    //         y = rand() % map.size();
-    //     } while (map[y][x] != 0);
+//     for (int i = 0; i < enemyCount; ++i) {
+//         int x, y;
+//         do {
+//             x = rand() % map[0].size();
+//             y = rand() % map.size();
+//         } while (map[y][x] != 0);
 
-    //     Enemy e;
-    //     e.position = { static_cast<float>(x), static_cast<float>(y) };
-    //     e.speed = 2.0f;
-    //     enemies.push_back(e);
-    // }
+//         Enemy e;
+//         e.position = { static_cast<float>(x), static_cast<float>(y) };
+//         e.speed = 2.0f;
+//         enemies.push_back(e);
+//     }
     
 }
 
@@ -235,8 +235,16 @@ void renderScene() {
         carre.drawShape();
         myEngine.mvMatrixStack.popMatrix();
     }
+
+    
 }
 
+// test
+void updateEnemies(float deltaTime) {
+    for (auto& enemy : enemies) {
+        enemy.update(flowField, deltaTime);
+    }
+}
 
 // dessin de la grille avec des carrés (pour la carte)
 void drawSquare(float x, float y, float size) {
