@@ -14,6 +14,7 @@
 #include <iostream>
 
 
+
 using namespace glbasimac;
 
 /* Camera parameters and functions */

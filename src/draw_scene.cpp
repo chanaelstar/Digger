@@ -2,6 +2,20 @@
 #include "tools/stb_image.h"
 #include "draw_scene.hpp"
 
+
+// A supprimer si ça marche pas
+#include "enemy.hpp"
+#include "flow_field.hpp"
+
+std::vector<Enemy> enemies;
+FlowField flowField;
+int targetX = 25; // Exemple : centre de la carte
+int targetY = 15;
+
+// std::vector<std::vector<int>> map; // définition de la variable extern
+// 
+
+
 float dist_zoom{30.0};	 // Distance between origin and viewpoint
 
 /* Position du carré */
@@ -58,6 +72,8 @@ void initPlayerPosition() {
         }
     }
 }
+
+
 void initScene(){
 	std::vector<float> carreCoordinates = {
         -0.5f, -0.5f,
@@ -87,8 +103,35 @@ void initScene(){
     };
     carre.initShape(playerCoordinates);
     initPlayerPosition();
-}
 
+    //     // === Génération de la carte ===
+    // map = createMap();
+
+    // // === Position de la cible (par exemple centre) ===
+    // targetX = map[0].size() / 2;
+    // targetY = map.size() / 2;
+
+    // // === Calcul du flow field ===
+    // flowField = computeFlowField(map, targetX, targetY);
+
+    // === Création des ennemis ===
+    // enemies.clear();
+    // int enemyCount = 5;
+
+    // for (int i = 0; i < enemyCount; ++i) {
+    //     int x, y;
+    //     do {
+    //         x = rand() % map[0].size();
+    //         y = rand() % map.size();
+    //     } while (map[y][x] != 0);
+
+    //     Enemy e;
+    //     e.position = { static_cast<float>(x), static_cast<float>(y) };
+    //     e.speed = 2.0f;
+    //     enemies.push_back(e);
+    // }
+    
+}
 
 
 void drawMenu() {
@@ -118,7 +161,6 @@ void drawMenu() {
     myEngine.mvMatrixStack.popMatrix();
     myEngine.updateMvMatrix();
 }
-
 
 
 void drawMap(const std::vector<std::vector<int>>& map, GLBI_Engine& myEngine) {
@@ -155,10 +197,15 @@ void drawMap(const std::vector<std::vector<int>>& map, GLBI_Engine& myEngine) {
     }
 }
 
+
 void renderScene() {
     int rows = map.size();
     int cols = map[0].size();
     float playerSize = 0.95f; 
+
+    // test
+        float enemySize = 0.8f;
+
 
     // Affichage plein écran
     myEngine.set2DProjection(0.f, float(cols), 0.f, float(rows));
@@ -176,7 +223,20 @@ void renderScene() {
     carre.drawShape();
     myEngine.mvMatrixStack.popMatrix();
     myEngine.updateMvMatrix();
+
+        // === Affichage des ennemis ===
+    myEngine.setFlatColor(0.0f, 0.0f, 1.0f); // Bleu pour les ennemis
+    carre.changeNature(GL_TRIANGLE_FAN);
+      for (const auto& enemy : enemies) {
+        myEngine.mvMatrixStack.pushMatrix();
+        myEngine.mvMatrixStack.addTranslation(STP3D::Vector3D(enemy.position.x, enemy.position.y, 0.0f));
+        myEngine.mvMatrixStack.addHomothety(STP3D::Vector3D(enemySize/2, enemySize/2, 1.0f));
+        myEngine.updateMvMatrix();
+        carre.drawShape();
+        myEngine.mvMatrixStack.popMatrix();
+    }
 }
+
 
 // dessin de la grille avec des carrés (pour la carte)
 void drawSquare(float x, float y, float size) {

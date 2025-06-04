@@ -10,6 +10,13 @@
 #include "carte.hpp"
 #include <vector>
 
+#include "enemy.hpp"
+#include "flow_field.hpp"
+#include "draw_scene.hpp"
+
+
+float lastTime = 0.0f;
+
 // il n'aime pas ça 
 std::vector<std::vector<int>> map = createMap();
 using namespace glbasimac;
@@ -73,6 +80,39 @@ void mouse_button_callback(GLFWwindow* window, int button, int action, int mods)
         }
     }
 }
+
+
+
+// void renderScene() {
+//     float currentTime = glfwGetTime();
+//     float deltaTime = currentTime - lastTime;
+//     lastTime = currentTime;
+
+//     // Optionnel : Recalculer le flow field si le joueur a bougé d'une cellule
+//     static int prevPlayerX = -1;
+//     static int prevPlayerY = -1;
+//     int playerX = static_cast<int>(carrePosX);
+//     int playerY = static_cast<int>(carrePosY);
+//     if (playerX != prevPlayerX || playerY != prevPlayerY) {
+//         flowField = computeFlowField(map, playerX, playerY);
+//         prevPlayerX = playerX;
+//         prevPlayerY = playerY;
+//     }
+
+//     // Met à jour la position des ennemis
+//     for (auto& enemy : enemies) {
+//         enemy.update(flowField, deltaTime);
+//     }
+
+//     // Dessin de la carte
+//     drawMap(map, myEngine);
+
+//     // Dessin des ennemis
+//     for (const auto& enemy : enemies) {
+//         drawSquare(enemy.position.x, enemy.position.y, 1.0f);
+//     }
+// }
+
 
 int main()
 {
