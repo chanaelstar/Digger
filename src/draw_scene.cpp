@@ -46,6 +46,8 @@ struct Vector2D {
 float playerX = 1.5f; // Position initiale du joueur en indices de grille
 float playerY = 1.5f;
 
+bool victory = false; // Indique si le joueur a gagné
+
 // Convertit des indices de grille en coordonnées OpenGL (centre de la case)
 Vector2D gridToWorld(int gridX, int gridY, int rows, int cols) {
     float x = gridX + 0.5f;
@@ -55,8 +57,8 @@ Vector2D gridToWorld(int gridX, int gridY, int rows, int cols) {
 
 // Convertit une position OpenGL (x, y) en indices de grille
 std::pair<int, int> worldToGrid(float x, float y, int rows, int cols) {
-    int gridX = int(x);
-    int gridY = rows - 1 - int(y);
+    int gridX = static_cast<int>(std::floor(x));
+    int gridY = rows - 1 - static_cast<int>(std::floor(y));
     return {gridX, gridY};
 }
 
@@ -197,8 +199,40 @@ void drawMap(const std::vector<std::vector<int>>& map, GLBI_Engine& myEngine) {
     }
 }
 
+bool checkVictory(const std::vector<std::vector<int>>& map) {
+    for (const auto& row : map) {
+        for (int cell : row) {
+            if (cell == 3) return false;
+        }
+    }
+    return true;
+}
+
+void drawVictoryScreen() {
+    glClearColor(0.1f, 0.1f, 0.3f, 1.f);
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    glEnable(GL_DEPTH_TEST);
+
+    myEngine.set2DProjection(-5.f, 5.f, -5.f, 5.f);
+    myEngine.mvMatrixStack.loadIdentity();
+
+    myEngine.setFlatColor(0.2f, 0.9f, 0.2f);
+    myEngine.mvMatrixStack.pushMatrix();
+    myEngine.mvMatrixStack.addHomothety(STP3D::Vector3D(6.0f, 3.0f, 1.0f));
+    myEngine.updateMvMatrix();
+    carre.changeNature(GL_TRIANGLE_FAN);
+    carre.drawShape();
+    myEngine.mvMatrixStack.popMatrix();
+    myEngine.updateMvMatrix();
+}
 
 void renderScene() {
+
+     if (victory) {
+        drawVictoryScreen();
+        return;
+    }
+    
     int rows = map.size();
     int cols = map[0].size();
     float playerSize = 0.95f; 
@@ -298,8 +332,11 @@ bool canMoveSquare(float x, float y, float playerSize, const std::vector<std::ve
 
 void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods)
 {
+    if(victory) return;
+
     if (action == GLFW_PRESS || action == GLFW_REPEAT)
     {
+        
         float step = 0.15f;
         float newX = playerX;
         float newY = playerY;
@@ -334,6 +371,10 @@ void key_callback(GLFWwindow* window, int key, int scancode, int action, int mod
                 if (map[gridY][gridX] == 2 || map[gridY][gridX] == 3) {
                     map[gridY][gridX] = 0; // Le bloc devient vide
                 }
+            }
+            // Vérification de la victoire
+            if (checkVictory(map)) {
+                victory = true;
             }
         }
     }
