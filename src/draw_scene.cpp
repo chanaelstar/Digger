@@ -191,6 +191,10 @@ void drawMap(const std::vector<std::vector<int>>& map, GLBI_Engine& myEngine) {
                 myEngine.setFlatColor(0.0f, 0.0f, 1.0f); // bleu (les récompenses)
                 drawSquare(x, y, 1.0f);
             }
+            else if (val == 4) {
+                myEngine.setFlatColor(0.0f, 1.0f, 0.0f); // vert (bloc spécial pour la téléportation)
+                drawSquare(x, y, 1.0f);
+            }
             else {
                 myEngine.setFlatColor(1.0f, 0.0f, 0.0f); // rouge
                 drawSquare(x, y, 1.0f);
@@ -389,11 +393,30 @@ void key_callback(GLFWwindow* window, int key, int scancode, int action, int mod
                     int blueBlocks = countBlueBlocks(map);
                     std::cout << "Recompenses restantes: " << blueBlocks << std::endl;
                 }
+                    else if (map[gridY][gridX] == 4) {
+                        map[gridY][gridX] = 0; // On enlève le bloc vert après téléportation
+
+                        // Cherche toutes les cases vides
+                        std::vector<std::pair<int, int>> emptyCells;
+                        for (int y = 0; y < map.size(); ++y) {
+                            for (int x = 0; x < map[0].size(); ++x) {
+                                if (map[y][x] == 0) {
+                                    emptyCells.emplace_back(x, y);
+                                }
+                            }
+                        }
+
+                        if (!emptyCells.empty()) {
+                            auto randomCell = emptyCells[rand() % emptyCells.size()];
+                            playerX = randomCell.first + 0.5f;
+                            playerY = map.size() - 1 - randomCell.second + 0.5f;
+                        }
+                    }
+                }
             }
             // Vérification de la victoire
             if (checkVictory(map)) {
                 victory = true;
             }
         }
-    }
 }

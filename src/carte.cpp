@@ -197,6 +197,14 @@ std::vector<std::vector<int>> createMap(){
             }
         }
     }
+    int greenProbability = 1; 
+    for (int y = 0; y < HEIGHT; ++y) {
+        for (int x = 0; x < WIDTH; ++x) {
+            if (grid[y][x] == 0 && (rand() % 100 < greenProbability)) {
+                grid[y][x] = 4; 
+            }
+        }
+    }
 }
 
     return grid;
