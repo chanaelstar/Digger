@@ -9,3 +9,10 @@
 std::vector<std::vector<int>> createMap();
 void printGrid(const std::vector<std::vector<int>>& grid);
 
+// Structure pour stocker une composante connexe
+struct Component {
+    int id;
+    std::vector<std::pair<int, int>> tiles;
+    int centerX;
+    int centerY;
+};

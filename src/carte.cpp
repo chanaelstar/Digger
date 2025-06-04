@@ -55,14 +55,6 @@ void simulateStep(std::vector<std::vector<int>>& grid) {
 // Pour garantir que tous les chemins de la carte générée soient reliés 
 // Connexité via Flood Fill + Connexion des composants
 
-// Structure pour stocker une composante connexe
-struct Component {
-    int id;
-    std::vector<std::pair<int, int>> tiles;
-    int centerX;
-    int centerY;
-};
-
 const int DX[4] = {1, -1, 0, 0};
 const int DY[4] = {0, 0, 1, -1};
 
