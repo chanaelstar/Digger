@@ -328,7 +328,18 @@ bool canMoveSquare(float x, float y, float playerSize, const std::vector<std::ve
     return true;
 }
 
-
+// Compte le nombre de blocs bleus restants dans la map
+int countBlueBlocks(const std::vector<std::vector<int>>& map) {
+    int count = 0;
+    for (const auto& row : map) {
+        for (int val : row) {
+            if (val == 3) {
+                ++count;
+            }
+        }
+    }
+    return count;
+}
 
 void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods)
 {
@@ -375,6 +386,8 @@ void key_callback(GLFWwindow* window, int key, int scancode, int action, int mod
             if (gridX >= 0 && gridX < map[0].size() && gridY >= 0 && gridY < map.size()) {
                 if (map[gridY][gridX] == 2 || map[gridY][gridX] == 3) {
                     map[gridY][gridX] = 0; // Le bloc devient vide
+                    int blueBlocks = countBlueBlocks(map);
+                    std::cout << "Recompenses restantes: " << blueBlocks << std::endl;
                 }
             }
             // Vérification de la victoire
