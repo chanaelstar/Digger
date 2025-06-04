@@ -298,7 +298,7 @@ void renderScene() {
 
     // Mise à jour des ennemis
     for (auto& enemy : enemies) {
-    enemy.update(flowField, map, deltaTime);
+    enemy.update(flowField, map, deltaTime, Vec2{playerX, playerY});
     }
 
 
