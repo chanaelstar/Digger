@@ -220,7 +220,7 @@ void drawMenu() {
     myEngine.setFlatColor(1.0f, 1.0f, 1.0f);
     myEngine.mvMatrixStack.pushMatrix();
     myEngine.mvMatrixStack.addTranslation(STP3D::Vector3D(0.0f, 2.0f, 0.0f));
-    myEngine.mvMatrixStack.addHomothety(STP3D::Vector3D(3.0f, 1.0f, 1.0f));
+    myEngine.mvMatrixStack.addHomothety(STP3D::Vector3D(3.0f, 2.0f, 1.0f));
     myEngine.updateMvMatrix();
     playTexture.attachTexture();
     carreMesh.draw();
@@ -231,7 +231,7 @@ void drawMenu() {
     myEngine.setFlatColor(1.0f, 1.0f, 1.0f);
     myEngine.mvMatrixStack.pushMatrix();
     myEngine.mvMatrixStack.addTranslation(STP3D::Vector3D(0.0f, -2.0f, 0.0f));
-    myEngine.mvMatrixStack.addHomothety(STP3D::Vector3D(3.0f, 1.0f, 1.0f));
+    myEngine.mvMatrixStack.addHomothety(STP3D::Vector3D(3.0f, 2.0f, 1.0f));
     myEngine.updateMvMatrix();
     quitTexture.attachTexture();
     carreMesh.draw();
