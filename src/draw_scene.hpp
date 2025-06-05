@@ -43,8 +43,9 @@ extern float carrePosY;
 extern int objectNumber;
 extern float aspectRatio;
 
-void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods);
 
+void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods);
+void restartGame();
 // ennemis
 float getDeltaTime();
 

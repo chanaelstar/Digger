@@ -69,6 +69,7 @@ float playerY = 1.5f;
 bool victory = false; // Indique si le joueur a gagné
 bool isPaused = false; // Indique si le jeu est en pause
 bool defeat = false; // Indique si le joueur a perdu
+bool inMenu = true; // Indique si le joueur est dans le menu
 
 // Convertit des indices de grille en coordonnées OpenGL (centre de la case)
 Vector2D gridToWorld(int gridX, int gridY, int rows, int cols) {
@@ -109,17 +110,16 @@ StandardMesh createMesh(std::vector<float>& carreCoordinates, std::vector<float>
 
 // ajout pour la texture (suite à l'appel avec Jules)
 void initTexture(GLBI_Texture& texture, const std::string& fileName) {
-    // Chargement de l'image
     const std::string filename{"./assets/images/" + fileName};
     int x{}, y{}, n{};
-    unsigned char *pixels{stbi_load(filename.c_str(), &x, &y, &n, 0)};
+    unsigned char *pixels{stbi_load(filename.c_str(), &x, &y, &n, 4)}; // <-- 4 canaux forcés
     std::cout << "Image " << filename << (pixels != nullptr ? "" : " not") << " loaded. channel count: " << n << std::endl;
 
     texture.createTexture();
     texture.attachTexture();
     texture.setParameters(GL_TEXTURE_MIN_FILTER, GL_LINEAR);
     texture.setParameters(GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-    texture.loadImage(x, y, n, pixels);
+    texture.loadImage(x, y, 4, pixels); // <-- 4 canaux
     texture.detachTexture();
     stbi_image_free(pixels);
 }
@@ -214,18 +214,9 @@ void drawMenu() {
     myEngine.set2DProjection(-5.f, 5.f, -5.f, 5.f);
     myEngine.mvMatrixStack.loadIdentity();
 
-    myEngine.activateTexturing(true);
-    myEngine.setFlatColor(1.0f, 1.0f, 1.0f);
-    myEngine.mvMatrixStack.pushMatrix();
-    myEngine.mvMatrixStack.addHomothety(STP3D::Vector3D(10.0f, 10.0f, 1.0f)); 
-    myEngine.updateMvMatrix();
-    backgroundTexture.attachTexture(); 
-    carreMesh.draw();
-    backgroundTexture.detachTexture();
-    myEngine.mvMatrixStack.popMatrix();
+ 
 
-    // Bouton Demarrer
-    myEngine.activateTexturing(true);
+    // DESSIN DU BOUTON PLAY
     myEngine.setFlatColor(1.0f, 1.0f, 1.0f);
     myEngine.mvMatrixStack.pushMatrix();
     myEngine.mvMatrixStack.addTranslation(STP3D::Vector3D(0.0f, 2.0f, 0.0f));
@@ -236,7 +227,7 @@ void drawMenu() {
     playTexture.detachTexture();
     myEngine.mvMatrixStack.popMatrix();
 
-    // Bouton Quitter
+    // DESSIN DU BOUTON EXIT
     myEngine.setFlatColor(1.0f, 1.0f, 1.0f);
     myEngine.mvMatrixStack.pushMatrix();
     myEngine.mvMatrixStack.addTranslation(STP3D::Vector3D(0.0f, -2.0f, 0.0f));
@@ -246,8 +237,20 @@ void drawMenu() {
     carreMesh.draw();
     quitTexture.detachTexture();
     myEngine.mvMatrixStack.popMatrix();
+
     myEngine.updateMvMatrix();
     myEngine.activateTexturing(false);
+
+       // DESSIN DU FOND
+    myEngine.activateTexturing(true);
+    myEngine.setFlatColor(1.0f, 1.0f, 1.0f);
+    myEngine.mvMatrixStack.pushMatrix();
+    myEngine.mvMatrixStack.addHomothety(STP3D::Vector3D(10.0f, 10.0f, 1.0f)); // Recouvre tout le menu
+    myEngine.updateMvMatrix();
+    backgroundTexture.attachTexture();
+    carreMesh.draw();
+    backgroundTexture.detachTexture();
+    myEngine.mvMatrixStack.popMatrix();
 }
 
 
@@ -283,7 +286,7 @@ void drawMap(const std::vector<std::vector<int>>& map, GLBI_Engine& myEngine) {
             }
             else {
                 myEngine.setFlatColor(1.0f, 0.0f, 0.0f); // rouge
-                drawSquare(x, y, 1.0f,  playerTexture); // Utiliser la texture de l'eau pour les ennemis
+                drawSquare(x, y, 1.0f,  playerTexture); 
             }
         }
     }
@@ -570,6 +573,15 @@ void key_callback(GLFWwindow* window, int key, int scancode, int action, int mod
         isPaused = !isPaused;
         return;
     }
+
+    // // retour au menu après victoire ou défaite
+    // if (key == GLFW_KEY_R && action == GLFW_PRESS) {
+    //     if (victory || defeat) {
+    //         restartGame();
+    //         inMenu = true; // Retour au menu après redémarrage
+    //         return;
+    //     }
+    // }
 
     if(victory || isPaused) return;
 
