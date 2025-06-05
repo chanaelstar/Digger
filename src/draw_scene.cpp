@@ -3,6 +3,7 @@
 #include "draw_scene.hpp"
 #include "enemy.hpp"
 #include "flow_field.hpp"
+#include "glbasimac/glbi_texture.hpp"
 
 std::vector<Enemy> enemies;
 FlowField flowField;
@@ -15,7 +16,6 @@ int lastPlayerGridY = -1;
 GLFWwindow* mainWindow = nullptr; 
 bool isFullscreen = false;
 int windowedPosX = 100, windowedPosY = 100, windowedWidth = 800, windowedHeight = 800;
-
 
 float dist_zoom{30.0};	 // Distance between origin and viewpoint
 
@@ -36,13 +36,12 @@ GLBI_Set_Of_Points somePoints(3);
 GLBI_Convex_2D_Shape ground{3};
 GLBI_Convex_2D_Shape carre;
 
-// StandardMesh carreMesh{};
+StandardMesh carreMesh{};
 // StandardMesh& carreMeshRef {carreMesh};
 GLBI_Set_Of_Points thePoints;
 GLBI_Set_Of_Points frame(3);
 int objectNumber = 0;
 
-StandardMesh carreMesh{};
 GLBI_Texture texture;
 GLBI_Texture playTexture;
 GLBI_Texture quitTexture;
@@ -59,6 +58,7 @@ float playerX = 1.5f; // Position initiale du joueur en indices de grille
 float playerY = 1.5f;
 
 bool victory = false; // Indique si le joueur a gagné
+bool isPaused = false; // Indique si le jeu est en pause
 
 // Convertit des indices de grille en coordonnées OpenGL (centre de la case)
 Vector2D gridToWorld(int gridX, int gridY, int rows, int cols) {
@@ -87,14 +87,7 @@ void initPlayerPosition() {
     }
 }
 
-// StandardMesh& createMesh(std::vector<float>& carreCoordinates, std::vector<float>& textureCoordinates) {
-//     StandardMesh* mesh = new StandardMesh(4,GL_TRIANGLE_FAN);
- 
-//     mesh->addOneBuffer(0,3,carreCoordinates.data(), "coordinates", true);
-//     mesh->addOneBuffer(2,2,textureCoordinates.data(), "uvs", true);
-//     mesh->createVAO();
-//     return *mesh;
-// }
+
 StandardMesh createMesh(std::vector<float>& carreCoordinates, std::vector<float>& textureCoordinates) {
     StandardMesh mesh = StandardMesh(4,GL_TRIANGLE_FAN);
  
@@ -105,12 +98,12 @@ StandardMesh createMesh(std::vector<float>& carreCoordinates, std::vector<float>
 }
 
 // ajout pour la texture (suite à l'appel avec Jules)
-void initTexture(GLBI_Texture& texture, std::string const& fileName) {
+void initTexture(GLBI_Texture& texture, const std::string& fileName) {
+    // Chargement de l'image
     const std::string filename{"./assets/images/" + fileName};
     int x{}, y{}, n{};
     unsigned char *pixels{stbi_load(filename.c_str(), &x, &y, &n, 0)};
-    std::cout << "Chargement de l'image : " << filename << (pixels != nullptr ? "" : " not")
-                << "loaded. channel count: " << n << std::endl;
+    std::cout << "Image " << filename << (pixels != nullptr ? "" : " not") << " loaded. channel count: " << n << std::endl;
 
     texture.createTexture();
     texture.attachTexture();
@@ -122,8 +115,10 @@ void initTexture(GLBI_Texture& texture, std::string const& fileName) {
 }
 
 void initScene(){
-    
     myEngine.activateTexturing(true);
+
+    glEnable(GL_BLEND);
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
 	std::vector<float> carreCoordinates = {
     -0.5f, -0.5f, 0.f,
@@ -138,77 +133,17 @@ void initScene(){
         0.0f, 0.0f,
     };
 
-
-    //  std::vector<float> textures{
-    //     0.0f, 0.0f,
-    //     1.0f, 0.0f,
-    //     1.0f, 1.0f,
-    //     0.0f, 1.0f
-    // };
-    // createMesh(baseCarre, textures);
-    
+   // la partie création du mesh
     carreMesh = StandardMesh(4,GL_TRIANGLE_FAN);
     carreMesh.addOneBuffer(0,3,carreCoordinates.data(), "coordinates", true);
     carreMesh.addOneBuffer(2,2,textures.data(), "uvs", true);
     carreMesh.createVAO();
-
-    //ajout suite à l'appel de Jules
-    initTexture(texture, "sand1.png");
-    initTexture(playTexture, "water1.png");
-    
     // la partie création de la texture
-    int x{}, y{}, n{};
-    unsigned char* data = stbi_load((exe_path::dir() / "assets/images/play.png").string().c_str(), &x, &y, &n, 0);
-    if (!data) {
-    std::cerr << "Erreur chargement image : " << stbi_failure_reason() << std::endl;
-	}
-
-    playTexture.createTexture();
-    playTexture.attachTexture();
-    playTexture.setParameters(GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-    playTexture.setParameters(GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-    playTexture.loadImage(x, y, n, data);
-    playTexture.detachTexture();
-    stbi_image_free(data);
-
-    int qx{}, qy{}, qn{};
-    unsigned char* quitData = stbi_load((exe_path::dir() / "assets/images/exit.png").string().c_str(), &qx, &qy, &qn, 0);
-    if (!quitData) {
-        std::cerr << "Erreur chargement image : " << stbi_failure_reason() << std::endl;
-    }
-    quitTexture.createTexture();
-    quitTexture.attachTexture();
-    quitTexture.setParameters(GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-    quitTexture.setParameters(GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-    quitTexture.loadImage(qx, qy, qn, quitData);
-    quitTexture.detachTexture();
-    stbi_image_free(quitData);
-
-    int vx{}, vy{}, vn{};
-    unsigned char* victoryData = stbi_load((exe_path::dir() / "assets/images/victory.jpg").string().c_str(), &vx, &vy, &vn, 0);
-    if (!victoryData) {
-        std::cerr << "Erreur chargement image de fond : " << stbi_failure_reason() << std::endl;
-    }
-    victoryTexture.createTexture();
-    victoryTexture.attachTexture();
-    victoryTexture.setParameters(GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-    victoryTexture.setParameters(GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-    victoryTexture.loadImage(vx, vy, vn, victoryData);
-    victoryTexture.detachTexture();
-    stbi_image_free(victoryData);
-
-    // int sx{}, sy{}, sn{};
-    // unsigned char* sandData = stbi_load((exe_path::dir() / "assets/images/sand1.png").string().c_str(), &sx, &sy, &sn, 0);
-    // if (!sandData) {
-    //     std::cerr << "Erreur chargement image de fond : " << stbi_failure_reason() << std::endl;
-    // }
-    // sandTexture.createTexture();
-    // sandTexture.attachTexture();
-    // sandTexture.setParameters(GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-    // sandTexture.setParameters(GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-    // sandTexture.loadImage(vx, vy, vn, sandData);
-    // sandTexture.detachTexture();
-    // stbi_image_free(sandData);
+    initTexture(sandTexture, "Sand1.png");
+    initTexture(waterTexture, "Water1.png");
+    initTexture(playTexture, "play.png");
+    initTexture(quitTexture, "exit.png");
+    initTexture(victoryTexture, "victory.jpg");
 
 	std::vector<float> playerCoordinates = {
         -1.f, -1.f,
@@ -297,27 +232,27 @@ void drawMap(const std::vector<std::vector<int>>& map, GLBI_Engine& myEngine) {
 
             if (val == 0) {
                 myEngine.setFlatColor(1.0f, 1.0f, 1.0f); // blanc
-                drawSquare(x, y, 1.0f);
+                drawSquare(x, y, 1.0f, sandTexture);
             }
             else if (val == 1) {
                 myEngine.setFlatColor(0.0f, 0.0f, 0.0f); // noir
-                drawSquare(x, y, 1.0f);
+                drawSquare(x, y, 1.0f, waterTexture);
             }
             else if (val == 2) {
                 myEngine.setFlatColor(1.0f, 1.0f, 0.0f); // jaune (les blocs minables)
-                drawSquare(x, y, 1.0f);
+                drawSquare(x, y, 1.0f, waterTexture);
             }
             else if (val == 3) {
                 myEngine.setFlatColor(0.0f, 0.0f, 1.0f); // bleu (les récompenses)
-                drawSquare(x, y, 1.0f);
+                drawSquare(x, y, 1.0f,  waterTexture);
             }
             else if (val == 4) {
                 myEngine.setFlatColor(0.0f, 1.0f, 0.0f); // vert (bloc spécial pour la téléportation)
-                drawSquare(x, y, 1.0f);
+                drawSquare(x, y, 1.0f, waterTexture);
             }
             else {
                 myEngine.setFlatColor(1.0f, 0.0f, 0.0f); // rouge
-                drawSquare(x, y, 1.0f);
+                drawSquare(x, y, 1.0f,  waterTexture); // Utiliser la texture de l'eau pour les ennemis
             }
         }
     }
@@ -366,6 +301,46 @@ void renderScene() {
 
      if (victory) {
         drawVictoryScreen();
+        return;
+    }
+
+    if (isPaused) {
+        // Affiche la scène sans mettre à jour les ennemis ni le joueur
+        myEngine.activateTexturing(false);
+        int rows = map.size();
+        int cols = map[0].size();
+        float playerSize = 0.95f;
+        float enemySize = 0.8f;
+
+        myEngine.set2DProjection(0.f, float(cols), 0.f, float(rows));
+        myEngine.mvMatrixStack.loadIdentity();
+
+        // joueur
+        myEngine.setFlatColor(1.0f, 0.0f, 0.0f);
+        carre.changeNature(GL_TRIANGLE_FAN);
+        myEngine.mvMatrixStack.pushMatrix();
+        myEngine.mvMatrixStack.addTranslation(STP3D::Vector3D(playerX, playerY, 0.0f));
+        myEngine.mvMatrixStack.addHomothety(STP3D::Vector3D(playerSize/2, playerSize/2, 1.0f));
+        myEngine.updateMvMatrix();
+        carre.drawShape();
+        myEngine.mvMatrixStack.popMatrix();
+        myEngine.updateMvMatrix();
+
+        // Affichage des ennemis
+        myEngine.setFlatColor(1.0f, 0.0f, 1.0f); // Rose pour les ennemis
+        carre.changeNature(GL_TRIANGLE_FAN);
+        for (const auto& enemy : enemies) {
+            myEngine.mvMatrixStack.pushMatrix();
+            myEngine.mvMatrixStack.addTranslation(STP3D::Vector3D(enemy.position.x, enemy.position.y, 0.0f));
+            myEngine.mvMatrixStack.addHomothety(STP3D::Vector3D(enemySize/2, enemySize/2, 1.0f));
+            myEngine.updateMvMatrix();
+            carre.drawShape();
+            myEngine.mvMatrixStack.popMatrix();
+        }
+
+        // Réinitialise le timer pour éviter un deltaTime à la reprise
+        getDeltaTime();
+
         return;
     }
     
@@ -430,15 +405,15 @@ void renderScene() {
 
 
 // dessin de la grille avec des carrés (pour la carte)
-void drawSquare(float x, float y, float size) {
-    carre.changeNature(GL_TRIANGLE_FAN);
+void drawSquare(float x, float y, float size, GLBI_Texture& texture) {
     myEngine.mvMatrixStack.pushMatrix();
     myEngine.mvMatrixStack.addTranslation(STP3D::Vector3D(x, y, 0.0f));
     myEngine.mvMatrixStack.addHomothety(STP3D::Vector3D(size/2, size/2, 0.0f));
     myEngine.updateMvMatrix();
-    carre.drawShape();
+    texture.attachTexture();
+    carreMesh.draw();
+    texture.detachTexture();
     myEngine.mvMatrixStack.popMatrix();
-    myEngine.updateMvMatrix();
 }
 
 
@@ -515,7 +490,15 @@ void key_callback(GLFWwindow* window, int key, int scancode, int action, int mod
         toggleFullscreen(window);
         return;
     }
-    if(victory) return;
+
+    // Ajout pour la pause
+    // Pause/Resume avec Entrée
+    if (key == GLFW_KEY_ENTER && action == GLFW_PRESS) {
+        isPaused = !isPaused;
+        return;
+    }
+
+    if(victory || isPaused) return;
 
     if (action == GLFW_PRESS || action == GLFW_REPEAT)
     {

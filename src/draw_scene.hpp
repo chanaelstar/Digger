@@ -1,17 +1,17 @@
 #pragma once
 #define GLFW_INCLUDE_NONE
-#include <tuple>
+#include "GLFW/glfw3.h"
 #include "carte.hpp"
 #include "exe_path/exe_path.h"
+#include "glbasimac/glbi_convex_2D_shape.hpp"
 #include "glbasimac/glbi_texture.hpp"
 #include "tools/shaders.hpp"
 #include "glbasimac/glbi_engine.hpp"
 #include "glbasimac/glbi_set_of_points.hpp"
-#include "glbasimac/glbi_convex_2D_shape.hpp"
 #include "tools/basic_mesh.hpp"
-#include "GLFW/glfw3.h"
 #include "glad/glad.h"
 #include <iostream>
+#include <tuple>
 
 
 using namespace glbasimac;
@@ -27,9 +27,10 @@ extern float dist_zoom  ;      // Distance between origin and viewpoint
 extern GLBI_Engine myEngine;
 
 void initScene();
+void initTexture(GLBI_Texture& texture, const std::string& fileName);
 void renderScene();
 void drawScene(const std::vector<std::vector<int>>& map);
-void drawSquare(float x, float y, float size);
+void drawSquare(float x, float y, float size, GLBI_Texture &texture);
 void drawMap(const std::vector<std::vector<int>>& map,GLBI_Engine& myEngine);
 void drawMenu();
 extern std::vector<std::vector<int>> map;
@@ -37,7 +38,6 @@ extern std::vector<std::vector<int>> map;
 
 
 // pour le joueur
-
 extern float carrePosX;
 extern float carrePosY;
 extern int objectNumber;
@@ -45,5 +45,6 @@ extern float aspectRatio;
 
 void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods);
 
+// ennemis
 float getDeltaTime();
 
