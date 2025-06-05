@@ -408,7 +408,7 @@ void renderScene() {
 void drawSquare(float x, float y, float size, GLBI_Texture& texture) {
     myEngine.mvMatrixStack.pushMatrix();
     myEngine.mvMatrixStack.addTranslation(STP3D::Vector3D(x, y, 0.0f));
-    myEngine.mvMatrixStack.addHomothety(STP3D::Vector3D(size/2, size/2, 0.0f));
+    myEngine.mvMatrixStack.addHomothety(STP3D::Vector3D(size, size, 0.0f));
     myEngine.updateMvMatrix();
     texture.attachTexture();
     carreMesh.draw();
