@@ -1,7 +1,7 @@
-#pragma once
+// #pragma once
 
-#include "glbasimac/glbi_texture.hpp"
-#include <vector>
+// #include "glbasimac/glbi_texture.hpp"
+// #include <vector>
 
-using namespace glbasimac;
+// using namespace glbasimac;
 

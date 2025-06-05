@@ -1,3 +1,5 @@
+#define STB_IMAGE_IMPLEMENTATION
+#include "tools/stb_image.h"
 #include "draw_scene.hpp"
 #include "enemy.hpp"
 #include "flow_field.hpp"
@@ -10,7 +12,6 @@ int lastPlayerGridX = -1;
 int lastPlayerGridY = -1;
 
 // std::vector<std::vector<int>> map; // définition de la variable extern
-// 
 
 
 float dist_zoom{30.0};	 // Distance between origin and viewpoint
@@ -32,8 +33,8 @@ GLBI_Set_Of_Points somePoints(3);
 GLBI_Convex_2D_Shape ground{3};
 GLBI_Convex_2D_Shape carre;
 
-StandardMesh carreMesh{};
-StandardMesh& carreMeshRef {carreMesh};
+// StandardMesh carreMesh{};
+// StandardMesh& carreMeshRef {carreMesh};
 GLBI_Set_Of_Points thePoints;
 GLBI_Set_Of_Points frame(3);
 int objectNumber = 0;
@@ -75,14 +76,15 @@ void initPlayerPosition() {
     }
 }
 
-StandardMesh& createMesh(std::vector<float>& carreCoordinates, std::vector<float>& textureCoordinates) {
-    StandardMesh* mesh = new StandardMesh(4,GL_TRIANGLE_FAN);
+// StandardMesh& createMesh(std::vector<float>& carreCoordinates, std::vector<float>& textureCoordinates) {
+//     StandardMesh* mesh = new StandardMesh(4,GL_TRIANGLE_FAN);
  
-    mesh->addOneBuffer(0,3,carreCoordinates.data(), "coordinates", true);
-    mesh->addOneBuffer(2,2,textureCoordinates.data(), "uvs", true);
-    mesh->createVAO();
-    return *mesh;
-}
+//     mesh->addOneBuffer(0,3,carreCoordinates.data(), "coordinates", true);
+//     mesh->addOneBuffer(2,2,textureCoordinates.data(), "uvs", true);
+//     mesh->createVAO();
+//     return *mesh;
+// }
+
 void initScene(){
 	std::vector<float> carreCoordinates = {
         -0.5f, -0.5f,
@@ -100,14 +102,13 @@ void initScene(){
 		-10.0, 10.0, 0.0
     };
 
-    std::vector<float> textures{
-        0.0f, 0.0f,
-        1.0f, 0.0f,
-        1.0f, 1.0f,
-        0.0f, 1.0f
-    };
-
-    createMesh(baseCarre, textures);
+    //  std::vector<float> textures{
+    //     0.0f, 0.0f,
+    //     1.0f, 0.0f,
+    //     1.0f, 1.0f,
+    //     0.0f, 1.0f
+    // };
+    // createMesh(baseCarre, textures);
 
 	carre.initShape(carreCoordinates);
 	ground.initShape(baseCarre);
@@ -154,37 +155,8 @@ for (int i = 0; i < enemyCount; ++i) {
         e.changeDirTimer = 0.0f;
         enemies.push_back(e);
     }
+} 
 }
-
-//         // === Génération de la carte ===
-//     map = createMap();
-
-//     // === Position de la cible (par exemple centre) ===
-//     targetX = map[0].size() / 2;
-//     targetY = map.size() / 2;
-
-//     // === Calcul du flow field ===
-//     flowField = computeFlowField(map, targetX, targetY);
-
-//    // === Création des ennemis ===
-//     enemies.clear();
-//     int enemyCount = 5;
-
-//     for (int i = 0; i < enemyCount; ++i) {
-//         int x, y;
-//         do {
-//             x = rand() % map[0].size();
-//             y = rand() % map.size();
-//         } while (map[y][x] != 0);
-
-//         Enemy e;
-//         e.position = { static_cast<float>(x), static_cast<float>(y) };
-//         e.speed = 2.0f;
-//         enemies.push_back(e);
-//     }
-    
-}
-
 
 void drawMenu() {
     glClearColor(0.1f, 0.1f, 0.3f, 1.f);
@@ -338,7 +310,7 @@ void renderScene() {
     myEngine.mvMatrixStack.popMatrix();
     myEngine.updateMvMatrix();
 
-        // === Affichage des ennemis ===
+        // Affichage des ennemis
     myEngine.setFlatColor(1.0f, 0.0f, 1.0f); // Rose pour les ennemis
     carre.changeNature(GL_TRIANGLE_FAN);
       for (const auto& enemy : enemies) {
@@ -361,8 +333,7 @@ void drawSquare(float x, float y, float size) {
     myEngine.mvMatrixStack.addTranslation(STP3D::Vector3D(x, y, 0.0f));
     myEngine.mvMatrixStack.addHomothety(STP3D::Vector3D(size/2, size/2, 0.0f));
     myEngine.updateMvMatrix();
-    carreMeshRef.draw();
-    // carre.drawShape();
+    carre.drawShape();
     myEngine.mvMatrixStack.popMatrix();
     myEngine.updateMvMatrix();
 }
