@@ -1,5 +1,3 @@
-#define STB_IMAGE_IMPLEMENTATION
-#include "tools/stb_image.h"
 #include "draw_scene.hpp"
 #include "enemy.hpp"
 #include "flow_field.hpp"
@@ -33,6 +31,9 @@ GLBI_Engine myEngine;
 GLBI_Set_Of_Points somePoints(3);
 GLBI_Convex_2D_Shape ground{3};
 GLBI_Convex_2D_Shape carre;
+
+StandardMesh carreMesh{};
+StandardMesh& carreMeshRef {carreMesh};
 GLBI_Set_Of_Points thePoints;
 GLBI_Set_Of_Points frame(3);
 int objectNumber = 0;
@@ -74,7 +75,14 @@ void initPlayerPosition() {
     }
 }
 
-
+StandardMesh& createMesh(std::vector<float>& carreCoordinates, std::vector<float>& textureCoordinates) {
+    StandardMesh* mesh = new StandardMesh(4,GL_TRIANGLE_FAN);
+ 
+    mesh->addOneBuffer(0,3,carreCoordinates.data(), "coordinates", true);
+    mesh->addOneBuffer(2,2,textureCoordinates.data(), "uvs", true);
+    mesh->createVAO();
+    return *mesh;
+}
 void initScene(){
 	std::vector<float> carreCoordinates = {
         -0.5f, -0.5f,
@@ -91,6 +99,16 @@ void initScene(){
 		10.0, 10.0, 0.0,
 		-10.0, 10.0, 0.0
     };
+
+    std::vector<float> textures{
+        0.0f, 0.0f,
+        1.0f, 0.0f,
+        1.0f, 1.0f,
+        0.0f, 1.0f
+    };
+
+    createMesh(baseCarre, textures);
+
 	carre.initShape(carreCoordinates);
 	ground.initShape(baseCarre);
 	carre.changeNature(GL_TRIANGLE_FAN);
@@ -343,7 +361,8 @@ void drawSquare(float x, float y, float size) {
     myEngine.mvMatrixStack.addTranslation(STP3D::Vector3D(x, y, 0.0f));
     myEngine.mvMatrixStack.addHomothety(STP3D::Vector3D(size/2, size/2, 0.0f));
     myEngine.updateMvMatrix();
-    carre.drawShape();
+    carreMeshRef.draw();
+    // carre.drawShape();
     myEngine.mvMatrixStack.popMatrix();
     myEngine.updateMvMatrix();
 }
