@@ -103,6 +103,24 @@ StandardMesh createMesh(std::vector<float>& carreCoordinates, std::vector<float>
     mesh.createVAO();
     return mesh;
 }
+
+// ajout pour la texture (suite à l'appel avec Jules)
+void initTexture(GLBI_Texture& texture, std::string const& fileName) {
+    const std::string filename{"./assets/images/" + fileName};
+    int x{}, y{}, n{};
+    unsigned char *pixels{stbi_load(filename.c_str(), &x, &y, &n, 0)};
+    std::cout << "Chargement de l'image : " << filename << (pixels != nullptr ? "" : " not")
+                << "loaded. channel count: " << n << std::endl;
+
+    texture.createTexture();
+    texture.attachTexture();
+    texture.setParameters(GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    texture.setParameters(GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+    texture.loadImage(x, y, n, pixels);
+    texture.detachTexture();
+    stbi_image_free(pixels);
+}
+
 void initScene(){
     
     myEngine.activateTexturing(true);
@@ -133,6 +151,10 @@ void initScene(){
     carreMesh.addOneBuffer(0,3,carreCoordinates.data(), "coordinates", true);
     carreMesh.addOneBuffer(2,2,textures.data(), "uvs", true);
     carreMesh.createVAO();
+
+    //ajout suite à l'appel de Jules
+    initTexture(texture, "sand1.png");
+    initTexture(playTexture, "water1.png");
     
     // la partie création de la texture
     int x{}, y{}, n{};
