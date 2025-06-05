@@ -47,7 +47,13 @@ GLBI_Texture playTexture;
 GLBI_Texture quitTexture;
 GLBI_Texture victoryTexture;
 GLBI_Texture sandTexture;
-GLBI_Texture waterTexture;
+GLBI_Texture waterTexture;      
+GLBI_Texture diamondTexture;
+GLBI_Texture doorTexture;
+GLBI_Texture playerTexture;
+GLBI_Texture blocTexture;
+
+
 
 struct Vector2D {
     float x;
@@ -144,6 +150,11 @@ void initScene(){
     initTexture(playTexture, "play.png");
     initTexture(quitTexture, "exit.png");
     initTexture(victoryTexture, "victory.jpg");
+    initTexture(diamondTexture, "diamond.png");
+    initTexture(doorTexture, "door.png");
+    initTexture(playerTexture, "player.png");
+    initTexture(blocTexture, "bloc.png");
+
 
 	std::vector<float> playerCoordinates = {
         -1.f, -1.f,
@@ -162,30 +173,30 @@ void initScene(){
     flowField = computeFlowField(map, targetX, targetY); // cible = joueur 
     
 
-enemies.clear();
-int enemyCount = 5;
-int triesMax = 1000;
+    enemies.clear();
+    int enemyCount = 5;
+    int triesMax = 1000;
 
-for (int i = 0; i < enemyCount; ++i) {
-    int tries = 0;
-    int x, y;
-    do {
-        x = rand() % map[0].size();
-        y = rand() % map.size();
-        tries++;
-        // On vérifie que la case est blanche (0)
-    } while ((map[y][x] != 0) && tries < triesMax);
+    for (int i = 0; i < enemyCount; ++i) {
+        int tries = 0;
+        int x, y;
+        do {
+            x = rand() % map[0].size();
+            y = rand() % map.size();
+            tries++;
+            // On vérifie que la case est blanche (0)
+        } while ((map[y][x] != 0) && tries < triesMax);
 
-    if (tries < triesMax) {
-        Enemy e;
-        // Place l'ennemi au centre de la case blanche
-        e.position = { x + 0.5f, map.size() - 1 - y + 0.5f };
-        e.speed = 2.0f;
-        e.direction = {0, 0};
-        e.changeDirTimer = 0.0f;
-        enemies.push_back(e);
-    }
-} 
+        if (tries < triesMax) {
+            Enemy e;
+            // Place l'ennemi au centre de la case blanche
+            e.position = { x + 0.5f, map.size() - 1 - y + 0.5f };
+            e.speed = 2.0f;
+            e.direction = {0, 0};
+            e.changeDirTimer = 0.0f;
+            enemies.push_back(e);
+        }
+    } 
 }
 
 void drawMenu() {
@@ -240,19 +251,19 @@ void drawMap(const std::vector<std::vector<int>>& map, GLBI_Engine& myEngine) {
             }
             else if (val == 2) {
                 myEngine.setFlatColor(1.0f, 1.0f, 0.0f); // jaune (les blocs minables)
-                drawSquare(x, y, 1.0f, waterTexture);
+                drawSquare(x, y, 1.0f, blocTexture);
             }
             else if (val == 3) {
                 myEngine.setFlatColor(0.0f, 0.0f, 1.0f); // bleu (les récompenses)
-                drawSquare(x, y, 1.0f,  waterTexture);
+                drawSquare(x, y, 1.0f,  diamondTexture);
             }
             else if (val == 4) {
                 myEngine.setFlatColor(0.0f, 1.0f, 0.0f); // vert (bloc spécial pour la téléportation)
-                drawSquare(x, y, 1.0f, waterTexture);
+                drawSquare(x, y, 1.0f, doorTexture);
             }
             else {
                 myEngine.setFlatColor(1.0f, 0.0f, 0.0f); // rouge
-                drawSquare(x, y, 1.0f,  waterTexture); // Utiliser la texture de l'eau pour les ennemis
+                drawSquare(x, y, 1.0f,  playerTexture); // Utiliser la texture de l'eau pour les ennemis
             }
         }
     }
@@ -306,7 +317,7 @@ void renderScene() {
 
     if (isPaused) {
         // Affiche la scène sans mettre à jour les ennemis ni le joueur
-        myEngine.activateTexturing(false);
+        myEngine.activateTexturing(true);
         int rows = map.size();
         int cols = map[0].size();
         float playerSize = 0.95f;
@@ -320,9 +331,11 @@ void renderScene() {
         carre.changeNature(GL_TRIANGLE_FAN);
         myEngine.mvMatrixStack.pushMatrix();
         myEngine.mvMatrixStack.addTranslation(STP3D::Vector3D(playerX, playerY, 0.0f));
-        myEngine.mvMatrixStack.addHomothety(STP3D::Vector3D(playerSize/2, playerSize/2, 1.0f));
+        myEngine.mvMatrixStack.addHomothety(STP3D::Vector3D(playerSize, playerSize, 1.0f));
         myEngine.updateMvMatrix();
-        carre.drawShape();
+        playerTexture.attachTexture();
+        carreMesh.draw();
+        playerTexture.detachTexture();
         myEngine.mvMatrixStack.popMatrix();
         myEngine.updateMvMatrix();
 
@@ -344,7 +357,7 @@ void renderScene() {
         return;
     }
     
-    myEngine.activateTexturing(false);
+    myEngine.activateTexturing(true);
 
     float deltaTime = getDeltaTime();
     int rows = map.size();
@@ -382,9 +395,11 @@ void renderScene() {
 
     myEngine.mvMatrixStack.pushMatrix();
     myEngine.mvMatrixStack.addTranslation(STP3D::Vector3D(playerX, playerY, 0.0f));
-    myEngine.mvMatrixStack.addHomothety(STP3D::Vector3D(playerSize/2, playerSize/2, 1.0f));
+    myEngine.mvMatrixStack.addHomothety(STP3D::Vector3D(playerSize, playerSize, 1.0f));
     myEngine.updateMvMatrix();
-    carre.drawShape();
+    playerTexture.attachTexture();
+    carreMesh.draw();
+    playerTexture.detachTexture();
     myEngine.mvMatrixStack.popMatrix();
     myEngine.updateMvMatrix();
 
@@ -406,7 +421,7 @@ void renderScene() {
 
 // dessin de la grille avec des carrés (pour la carte)
 void drawSquare(float x, float y, float size, GLBI_Texture& texture) {
-    myEngine.activateTexturing(true); // AJOUTE CETTE LIGNE
+    myEngine.activateTexturing(true); 
     myEngine.mvMatrixStack.pushMatrix();
     myEngine.mvMatrixStack.addTranslation(STP3D::Vector3D(x, y, 0.0f));
     myEngine.mvMatrixStack.addHomothety(STP3D::Vector3D(size, size, 0.0f));
@@ -415,7 +430,7 @@ void drawSquare(float x, float y, float size, GLBI_Texture& texture) {
     carreMesh.draw();
     texture.detachTexture();
     myEngine.mvMatrixStack.popMatrix();
-    myEngine.activateTexturing(false); // (optionnel, pour désactiver après)
+    myEngine.activateTexturing(false); 
 
 }
 
