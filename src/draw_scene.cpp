@@ -157,7 +157,7 @@ void initScene(){
     initTexture(diamondTexture, "sanddiamond.png");
     initTexture(doorTexture, "sanddoor.png");
     initTexture(playerTexture, "sandplayer.png");
-    initTexture(enemyTexture, "enemy.png");
+    initTexture(enemyTexture, "sandenemy.png");
     initTexture(blocTexture, "bloc.png");
     initTexture(defeatTexture, "gameOver.jpg");
     initTexture(backgroundTexture, "fond.jpg");
