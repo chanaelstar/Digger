@@ -4,6 +4,7 @@
 #include "enemy.hpp"
 #include "flow_field.hpp"
 #include "glbasimac/glbi_texture.hpp"
+#include <chrono>
 
 std::vector<Enemy> enemies;
 FlowField flowField;
@@ -70,6 +71,9 @@ bool victory = false; // Indique si le joueur a gagné
 bool isPaused = false; // Indique si le jeu est en pause
 bool defeat = false; // Indique si le joueur a perdu
 bool inMenu = true; // Indique si le joueur est dans le menu
+
+std::chrono::steady_clock::time_point endStateTime;
+bool waitingForMenu = false;
 
 // Convertit des indices de grille en coordonnées OpenGL (centre de la case)
 Vector2D gridToWorld(int gridX, int gridY, int rows, int cols) {
@@ -562,14 +566,14 @@ void key_callback(GLFWwindow* window, int key, int scancode, int action, int mod
         return;
     }
      // Ajout pour le plein écran
-    if (key == GLFW_KEY_SPACE && action == GLFW_PRESS) {
+    if (key == GLFW_KEY_F && action == GLFW_PRESS) {
         toggleFullscreen(window);
         return;
     }
 
     // Ajout pour la pause
-    // Pause/Resume avec Entrée
-    if (key == GLFW_KEY_ENTER && action == GLFW_PRESS) {
+    // Pause/Resume avec Espace
+    if (key == GLFW_KEY_SPACE && action == GLFW_PRESS) {
         isPaused = !isPaused;
         return;
     }
@@ -651,3 +655,4 @@ void key_callback(GLFWwindow* window, int key, int scancode, int action, int mod
             }
         }
 }
+
