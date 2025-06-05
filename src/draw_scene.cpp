@@ -42,6 +42,14 @@ GLBI_Set_Of_Points thePoints;
 GLBI_Set_Of_Points frame(3);
 int objectNumber = 0;
 
+StandardMesh carreMesh{};
+GLBI_Texture texture;
+GLBI_Texture playTexture;
+GLBI_Texture quitTexture;
+GLBI_Texture victoryTexture;
+GLBI_Texture sandTexture;
+GLBI_Texture waterTexture;
+
 struct Vector2D {
     float x;
     float y;
@@ -87,23 +95,31 @@ void initPlayerPosition() {
 //     mesh->createVAO();
 //     return *mesh;
 // }
-
+StandardMesh createMesh(std::vector<float>& carreCoordinates, std::vector<float>& textureCoordinates) {
+    StandardMesh mesh = StandardMesh(4,GL_TRIANGLE_FAN);
+ 
+    mesh.addOneBuffer(0,3,carreCoordinates.data(), "coordinates", true);
+    mesh.addOneBuffer(2,2,textureCoordinates.data(), "uvs", true);
+    mesh.createVAO();
+    return mesh;
+}
 void initScene(){
-	std::vector<float> carreCoordinates = {
-        -0.5f, -0.5f,
-        0.5f, -0.5f,
-        0.5f, 0.5f,
-        -0.5f, 0.5f
-    };
-	std::vector<float> points{0.0, 0.0, 0.0};
-	somePoints.initSet(points, 1.0, 1.0, 1.0);
+    
+    myEngine.activateTexturing(true);
 
-	std::vector<float> baseCarre{
-        -10.0, -10.0, 0.0,
-	    10.0, -10.0, 0.0,
-		10.0, 10.0, 0.0,
-		-10.0, 10.0, 0.0
+	std::vector<float> carreCoordinates = {
+    -0.5f, -0.5f, 0.f,
+     0.5f, -0.5f, 0.f,
+     0.5f,  0.5f, 0.f,
+    -0.5f,  0.5f, 0.f
     };
+    std::vector<float> textures = {
+        0.0f, 1.0f,
+        1.0f, 1.0f,
+        1.0f, 0.0f,
+        0.0f, 0.0f,
+    };
+
 
     //  std::vector<float> textures{
     //     0.0f, 0.0f,
@@ -112,11 +128,65 @@ void initScene(){
     //     0.0f, 1.0f
     // };
     // createMesh(baseCarre, textures);
+    
+    carreMesh = StandardMesh(4,GL_TRIANGLE_FAN);
+    carreMesh.addOneBuffer(0,3,carreCoordinates.data(), "coordinates", true);
+    carreMesh.addOneBuffer(2,2,textures.data(), "uvs", true);
+    carreMesh.createVAO();
+    
+    // la partie création de la texture
+    int x{}, y{}, n{};
+    unsigned char* data = stbi_load((exe_path::dir() / "assets/images/play.png").string().c_str(), &x, &y, &n, 0);
+    if (!data) {
+    std::cerr << "Erreur chargement image : " << stbi_failure_reason() << std::endl;
+	}
 
-	carre.initShape(carreCoordinates);
-	ground.initShape(baseCarre);
-	carre.changeNature(GL_TRIANGLE_FAN);
-	ground.changeNature(GL_TRIANGLE_FAN);
+    playTexture.createTexture();
+    playTexture.attachTexture();
+    playTexture.setParameters(GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    playTexture.setParameters(GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+    playTexture.loadImage(x, y, n, data);
+    playTexture.detachTexture();
+    stbi_image_free(data);
+
+    int qx{}, qy{}, qn{};
+    unsigned char* quitData = stbi_load((exe_path::dir() / "assets/images/exit.png").string().c_str(), &qx, &qy, &qn, 0);
+    if (!quitData) {
+        std::cerr << "Erreur chargement image : " << stbi_failure_reason() << std::endl;
+    }
+    quitTexture.createTexture();
+    quitTexture.attachTexture();
+    quitTexture.setParameters(GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    quitTexture.setParameters(GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+    quitTexture.loadImage(qx, qy, qn, quitData);
+    quitTexture.detachTexture();
+    stbi_image_free(quitData);
+
+    int vx{}, vy{}, vn{};
+    unsigned char* victoryData = stbi_load((exe_path::dir() / "assets/images/victory.jpg").string().c_str(), &vx, &vy, &vn, 0);
+    if (!victoryData) {
+        std::cerr << "Erreur chargement image de fond : " << stbi_failure_reason() << std::endl;
+    }
+    victoryTexture.createTexture();
+    victoryTexture.attachTexture();
+    victoryTexture.setParameters(GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    victoryTexture.setParameters(GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+    victoryTexture.loadImage(vx, vy, vn, victoryData);
+    victoryTexture.detachTexture();
+    stbi_image_free(victoryData);
+
+    // int sx{}, sy{}, sn{};
+    // unsigned char* sandData = stbi_load((exe_path::dir() / "assets/images/sand1.png").string().c_str(), &sx, &sy, &sn, 0);
+    // if (!sandData) {
+    //     std::cerr << "Erreur chargement image de fond : " << stbi_failure_reason() << std::endl;
+    // }
+    // sandTexture.createTexture();
+    // sandTexture.attachTexture();
+    // sandTexture.setParameters(GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    // sandTexture.setParameters(GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+    // sandTexture.loadImage(vx, vy, vn, sandData);
+    // sandTexture.detachTexture();
+    // stbi_image_free(sandData);
 
 	std::vector<float> playerCoordinates = {
         -1.f, -1.f,
@@ -167,26 +237,29 @@ void drawMenu() {
     glEnable(GL_DEPTH_TEST);
 
     // Bouton Demarrer
-    myEngine.setFlatColor(0.2f, 0.8f, 0.2f); // Vert
+    myEngine.activateTexturing(true);
+    myEngine.setFlatColor(1.0f, 1.0f, 1.0f);
     myEngine.mvMatrixStack.pushMatrix();
     myEngine.mvMatrixStack.addTranslation(STP3D::Vector3D(0.0f, 2.0f, 0.0f));
     myEngine.mvMatrixStack.addHomothety(STP3D::Vector3D(3.0f, 1.0f, 1.0f));
     myEngine.updateMvMatrix();
-    carre.changeNature(GL_TRIANGLE_FAN);
-    carre.drawShape();
+    playTexture.attachTexture();
+    carreMesh.draw();
+    playTexture.detachTexture();
     myEngine.mvMatrixStack.popMatrix();
-    myEngine.updateMvMatrix();
 
     // Bouton Quitter
-    myEngine.setFlatColor(0.8f, 0.2f, 0.2f); // Rouge
+    myEngine.setFlatColor(1.0f, 1.0f, 1.0f);
     myEngine.mvMatrixStack.pushMatrix();
     myEngine.mvMatrixStack.addTranslation(STP3D::Vector3D(0.0f, -2.0f, 0.0f));
     myEngine.mvMatrixStack.addHomothety(STP3D::Vector3D(3.0f, 1.0f, 1.0f));
     myEngine.updateMvMatrix();
-    carre.changeNature(GL_TRIANGLE_FAN);
-    carre.drawShape();
+    quitTexture.attachTexture();
+    carreMesh.draw();
+    quitTexture.detachTexture();
     myEngine.mvMatrixStack.popMatrix();
     myEngine.updateMvMatrix();
+    myEngine.activateTexturing(false);
 }
 
 
@@ -245,14 +318,17 @@ void drawVictoryScreen() {
     myEngine.set2DProjection(-5.f, 5.f, -5.f, 5.f);
     myEngine.mvMatrixStack.loadIdentity();
 
-    myEngine.setFlatColor(0.2f, 0.9f, 0.2f);
+    myEngine.activateTexturing(true);
+    myEngine.setFlatColor(1.0f, 1.0f, 1.0f); 
     myEngine.mvMatrixStack.pushMatrix();
-    myEngine.mvMatrixStack.addHomothety(STP3D::Vector3D(6.0f, 3.0f, 1.0f));
+    myEngine.mvMatrixStack.addHomothety(STP3D::Vector3D(10.0f, 10.0f, 1.0f));
     myEngine.updateMvMatrix();
-    carre.changeNature(GL_TRIANGLE_FAN);
-    carre.drawShape();
+    victoryTexture.attachTexture();
+    carreMesh.draw();
+    victoryTexture.detachTexture();
     myEngine.mvMatrixStack.popMatrix();
     myEngine.updateMvMatrix();
+    myEngine.activateTexturing(false);
 }
 
 
@@ -271,6 +347,8 @@ void renderScene() {
         return;
     }
     
+    myEngine.activateTexturing(false);
+
     float deltaTime = getDeltaTime();
     int rows = map.size();
     int cols = map[0].size();
