@@ -12,6 +12,9 @@ int lastPlayerGridX = -1;
 int lastPlayerGridY = -1;
 
 // std::vector<std::vector<int>> map; // définition de la variable extern
+GLFWwindow* mainWindow = nullptr; 
+bool isFullscreen = false;
+int windowedPosX = 100, windowedPosY = 100, windowedWidth = 800, windowedHeight = 800;
 
 
 float dist_zoom{30.0};	 // Distance between origin and viewpoint
@@ -387,11 +390,29 @@ int countBlueBlocks(const std::vector<std::vector<int>>& map) {
     return count;
 }
 
+void toggleFullscreen(GLFWwindow* window) {
+    isFullscreen = !isFullscreen;
+    if (isFullscreen) {
+        glfwGetWindowPos(window, &windowedPosX, &windowedPosY);
+        glfwGetWindowSize(window, &windowedWidth, &windowedHeight);
+        GLFWmonitor* monitor = glfwGetPrimaryMonitor();
+        const GLFWvidmode* mode = glfwGetVideoMode(monitor);
+        glfwSetWindowMonitor(window, monitor, 0, 0, mode->width, mode->height, mode->refreshRate);
+    } else {
+        glfwSetWindowMonitor(window, nullptr, windowedPosX, windowedPosY, windowedWidth, windowedHeight, 0);
+    }
+}
+
 void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods)
 {
 
     if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS) {
         glfwSetWindowShouldClose(window, GLFW_TRUE);
+        return;
+    }
+     // Ajout pour le plein écran
+    if (key == GLFW_KEY_SPACE && action == GLFW_PRESS) {
+        toggleFullscreen(window);
         return;
     }
     if(victory) return;
