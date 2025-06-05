@@ -7,10 +7,10 @@
 #include <cmath>
 
 std::vector<std::vector<int>> createMap();
-void printGrid(const std::vector<std::vector<int>>& grid);
+void printGrid(const std::vector<std::vector<int>> &grid);
 
-// Structure pour stocker une composante connexe
-struct Component {
+struct Component
+{
     int id;
     std::vector<std::pair<int, int>> tiles;
     int centerX;

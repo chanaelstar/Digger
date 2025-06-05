@@ -12,12 +12,9 @@
 #include "enemy.hpp"
 #include "flow_field.hpp"
 
-
 float lastTime = 0.0f;
 
-
-
-// il n'aime pas ça 
+// il n'aime pas ça
 std::vector<std::vector<int>> map = createMap();
 using namespace glbasimac;
 
@@ -33,7 +30,8 @@ static const int WINDOW_HEIGHT = 800;
 static const float GL_VIEW_SIZE = 10.0;
 
 // Menu
-enum class AppState {
+enum class AppState
+{
     MENU,
     JEU,
     QUIT
@@ -47,20 +45,25 @@ void onError(int error, const char *description)
     std::cout << "GLFW Error (" << error << ") : " << description << std::endl;
 }
 
+void onWindowResized(GLFWwindow * /*window*/, int width, int height)
+{
+    aspectRatio = width / (float)height;
+    glViewport(0, 0, width, height);
 
-void onWindowResized(GLFWwindow * /*window*/, int width, int height) {
-     aspectRatio = width / (float)height;
-     glViewport(0, 0, width, height);
+    if (aspectRatio > 1.0)
+    {
+        myEngine.set2DProjection(-GL_VIEW_SIZE * aspectRatio / 2., GL_VIEW_SIZE * aspectRatio / 2., -GL_VIEW_SIZE / 2., GL_VIEW_SIZE / 2.);
+    }
+    else
+    {
+        myEngine.set2DProjection(-GL_VIEW_SIZE / 2., GL_VIEW_SIZE / 2., -GL_VIEW_SIZE / (2. * aspectRatio), GL_VIEW_SIZE / (2. * aspectRatio));
+    }
+}
 
-     if(aspectRatio > 1.0) {
-         myEngine.set2DProjection(-GL_VIEW_SIZE * aspectRatio / 2., GL_VIEW_SIZE * aspectRatio / 2., -GL_VIEW_SIZE / 2., GL_VIEW_SIZE / 2.);
-     } else {
-         myEngine.set2DProjection(-GL_VIEW_SIZE / 2., GL_VIEW_SIZE / 2., -GL_VIEW_SIZE / (2. * aspectRatio), GL_VIEW_SIZE / (2. * aspectRatio));
-     }
- }
-
-void mouse_button_callback(GLFWwindow* window, int button, int action, int mods) {
-    if (button == GLFW_MOUSE_BUTTON_LEFT && action == GLFW_PRESS) {
+void mouse_button_callback(GLFWwindow *window, int button, int action, int mods)
+{
+    if (button == GLFW_MOUSE_BUTTON_LEFT && action == GLFW_PRESS)
+    {
         double xpos, ypos;
         glfwGetCursorPos(window, &xpos, &ypos);
 
@@ -71,17 +74,19 @@ void mouse_button_callback(GLFWwindow* window, int button, int action, int mods)
         float x = (xpos / width) * GL_VIEW_SIZE - GL_VIEW_SIZE / 2.f;
         float y = ((height - ypos) / height) * GL_VIEW_SIZE - GL_VIEW_SIZE / 2.f;
 
-        if (currentState == AppState::MENU) {
-            if (x > -3 && x < 3 && y > 1 && y < 3) {
-                currentState = AppState::JEU; 
-            } else if (x > -3 && x < 3 && y > -3 && y < -1) {
+        if (currentState == AppState::MENU)
+        {
+            if (x > -3 && x < 3 && y > 1 && y < 3)
+            {
+                currentState = AppState::JEU;
+            }
+            else if (x > -3 && x < 3 && y > -3 && y < -1)
+            {
                 currentState = AppState::QUIT;
             }
         }
     }
 }
-
-
 
 // void renderScene() {
 //     float currentTime = glfwGetTime();
@@ -113,7 +118,6 @@ void mouse_button_callback(GLFWwindow* window, int button, int action, int mods)
 //     }
 // }
 
-
 int main()
 {
     const double FRAMERATE_IN_SECONDS = 1. / 30.;
@@ -138,7 +142,6 @@ int main()
     glfwSetWindowSizeCallback(window, onWindowResized);
     glfwSetKeyCallback(window, key_callback);
     glfwSetMouseButtonCallback(window, mouse_button_callback);
-
 
     // Make the window's context current
     glfwMakeContextCurrent(window);
@@ -172,11 +175,13 @@ int main()
         /* Get time (in second) at loop beginning */
         double startTime = glfwGetTime();
 
-        if (currentState == AppState::MENU) {
+        if (currentState == AppState::MENU)
+        {
             drawMenu();
         }
-        
-        else if (currentState == AppState::JEU) {
+
+        else if (currentState == AppState::JEU)
+        {
             glClearColor(0.2f, 0.f, 0.f, 0.f);
             glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
             glEnable(GL_DEPTH_TEST);
@@ -185,7 +190,8 @@ int main()
             drawScene(map);
         }
 
-        else if (currentState == AppState::QUIT) {
+        else if (currentState == AppState::QUIT)
+        {
             glfwSetWindowShouldClose(window, GLFW_TRUE);
         }
 

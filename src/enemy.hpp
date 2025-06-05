@@ -4,12 +4,14 @@
 #include <cmath>
 #include <iostream>
 
-struct Enemy {
+struct Enemy
+{
     Vec2 position;
     float speed;
-    Vec2 direction;    // direction courante (x, y)
+    Vec2 direction;              // direction courante (x, y)
     float changeDirTimer = 0.0f; // temps restant avant de changer de direction
 
-void update(const FlowField& flowField, const std::vector<std::vector<int>>& map, float deltaTime, const Vec2& playerPos);};
+    void update(const FlowField &flowField, const std::vector<std::vector<int>> &map, float deltaTime, const Vec2 &playerPos);
+};
 
-bool canMoveEnemy(float x, float y, float enemySize, const std::vector<std::vector<int>>& map);
+bool canMoveEnemy(float x, float y, float enemySize, const std::vector<std::vector<int>> &map);
