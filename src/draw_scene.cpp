@@ -46,12 +46,15 @@ GLBI_Texture texture;
 GLBI_Texture playTexture;
 GLBI_Texture quitTexture;
 GLBI_Texture victoryTexture;
+GLBI_Texture defeatTexture;
 GLBI_Texture sandTexture;
 GLBI_Texture waterTexture;      
 GLBI_Texture diamondTexture;
 GLBI_Texture doorTexture;
 GLBI_Texture playerTexture;
+GLBI_Texture enemyTexture;
 GLBI_Texture blocTexture;
+GLBI_Texture backgroundTexture;
 
 
 
@@ -65,6 +68,7 @@ float playerY = 1.5f;
 
 bool victory = false; // Indique si le joueur a gagné
 bool isPaused = false; // Indique si le jeu est en pause
+bool defeat = false; // Indique si le joueur a perdu
 
 // Convertit des indices de grille en coordonnées OpenGL (centre de la case)
 Vector2D gridToWorld(int gridX, int gridY, int rows, int cols) {
@@ -145,15 +149,18 @@ void initScene(){
     carreMesh.addOneBuffer(2,2,textures.data(), "uvs", true);
     carreMesh.createVAO();
     // la partie création de la texture
-    initTexture(sandTexture, "Sand1.png");
+    initTexture(sandTexture, "sand.png");
     initTexture(waterTexture, "Water1.png");
     initTexture(playTexture, "play.png");
     initTexture(quitTexture, "exit.png");
-    initTexture(victoryTexture, "victory.jpg");
+    initTexture(victoryTexture, "Win.jpg");
     initTexture(diamondTexture, "diamond.png");
     initTexture(doorTexture, "door.png");
     initTexture(playerTexture, "player.png");
+    initTexture(enemyTexture, "enemy.png");
     initTexture(blocTexture, "bloc.png");
+    initTexture(defeatTexture, "gameOver.jpg");
+    initTexture(backgroundTexture, "fond.jpg");
 
 
 	std::vector<float> playerCoordinates = {
@@ -203,6 +210,19 @@ void drawMenu() {
     glClearColor(0.1f, 0.1f, 0.3f, 1.f);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     glEnable(GL_DEPTH_TEST);
+
+    myEngine.set2DProjection(-5.f, 5.f, -5.f, 5.f);
+    myEngine.mvMatrixStack.loadIdentity();
+
+    myEngine.activateTexturing(true);
+    myEngine.setFlatColor(1.0f, 1.0f, 1.0f);
+    myEngine.mvMatrixStack.pushMatrix();
+    myEngine.mvMatrixStack.addHomothety(STP3D::Vector3D(10.0f, 10.0f, 1.0f)); 
+    myEngine.updateMvMatrix();
+    backgroundTexture.attachTexture(); 
+    carreMesh.draw();
+    backgroundTexture.detachTexture();
+    myEngine.mvMatrixStack.popMatrix();
 
     // Bouton Demarrer
     myEngine.activateTexturing(true);
@@ -298,7 +318,26 @@ void drawVictoryScreen() {
     myEngine.updateMvMatrix();
     myEngine.activateTexturing(false);
 }
+void drawDefeatScreen() {
+    glClearColor(0.2f, 0.0f, 0.0f, 1.f);
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    glEnable(GL_DEPTH_TEST);
 
+    myEngine.set2DProjection(-5.f, 5.f, -5.f, 5.f);
+    myEngine.mvMatrixStack.loadIdentity();
+
+    myEngine.activateTexturing(true);
+    myEngine.setFlatColor(1.0f, 1.0f, 1.0f); 
+    myEngine.mvMatrixStack.pushMatrix();
+    myEngine.mvMatrixStack.addHomothety(STP3D::Vector3D(10.0f, 10.0f, 1.0f));
+    myEngine.updateMvMatrix();
+    defeatTexture.attachTexture();
+    carreMesh.draw();
+    defeatTexture.detachTexture();
+    myEngine.mvMatrixStack.popMatrix();
+    myEngine.updateMvMatrix();
+    myEngine.activateTexturing(false);
+}
 
 float getDeltaTime() {
     static auto lastTime = std::chrono::high_resolution_clock::now();
@@ -312,6 +351,10 @@ void renderScene() {
 
      if (victory) {
         drawVictoryScreen();
+        return;
+    }
+    if (defeat) {
+        drawDefeatScreen();
         return;
     }
 
@@ -345,9 +388,11 @@ void renderScene() {
         for (const auto& enemy : enemies) {
             myEngine.mvMatrixStack.pushMatrix();
             myEngine.mvMatrixStack.addTranslation(STP3D::Vector3D(enemy.position.x, enemy.position.y, 0.0f));
-            myEngine.mvMatrixStack.addHomothety(STP3D::Vector3D(enemySize/2, enemySize/2, 1.0f));
+            myEngine.mvMatrixStack.addHomothety(STP3D::Vector3D(enemySize, enemySize, 1.0f));
             myEngine.updateMvMatrix();
-            carre.drawShape();
+            enemyTexture.attachTexture();
+            carreMesh.draw();
+            enemyTexture.detachTexture();
             myEngine.mvMatrixStack.popMatrix();
         }
 
@@ -381,7 +426,15 @@ void renderScene() {
     for (auto& enemy : enemies) {
     enemy.update(flowField, map, deltaTime, Vec2{playerX, playerY});
     }
-
+    for (const auto& enemy : enemies) {
+    float dx = enemy.position.x - playerX;
+    float dy = enemy.position.y - playerY;
+    float dist = std::sqrt(dx*dx + dy*dy);
+        if (dist < 0.7f) {
+            defeat = true;
+            break;
+        }
+    }
 
 
     // Affichage plein écran
@@ -409,9 +462,11 @@ void renderScene() {
       for (const auto& enemy : enemies) {
         myEngine.mvMatrixStack.pushMatrix();
         myEngine.mvMatrixStack.addTranslation(STP3D::Vector3D(enemy.position.x, enemy.position.y, 0.0f));
-        myEngine.mvMatrixStack.addHomothety(STP3D::Vector3D(enemySize/2, enemySize/2, 1.0f));
+        myEngine.mvMatrixStack.addHomothety(STP3D::Vector3D(enemySize, enemySize, 1.0f));
         myEngine.updateMvMatrix();
-        carre.drawShape();
+        enemyTexture.attachTexture();
+        carreMesh.draw();
+        enemyTexture.detachTexture();
         myEngine.mvMatrixStack.popMatrix();
     }
 
