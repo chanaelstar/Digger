@@ -406,6 +406,7 @@ void renderScene() {
 
 // dessin de la grille avec des carrés (pour la carte)
 void drawSquare(float x, float y, float size, GLBI_Texture& texture) {
+    myEngine.activateTexturing(true); // AJOUTE CETTE LIGNE
     myEngine.mvMatrixStack.pushMatrix();
     myEngine.mvMatrixStack.addTranslation(STP3D::Vector3D(x, y, 0.0f));
     myEngine.mvMatrixStack.addHomothety(STP3D::Vector3D(size, size, 0.0f));
@@ -414,6 +415,8 @@ void drawSquare(float x, float y, float size, GLBI_Texture& texture) {
     carreMesh.draw();
     texture.detachTexture();
     myEngine.mvMatrixStack.popMatrix();
+    myEngine.activateTexturing(false); // (optionnel, pour désactiver après)
+
 }
 
 
